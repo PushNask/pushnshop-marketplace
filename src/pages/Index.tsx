@@ -300,10 +300,12 @@ function ProductCard({ product, language, formatCurrency, linkNumber }: ProductC
               <MessageCircle className="h-5 w-5" />
             </a>
           ) : (
-            <MessageCircle
-              className="h-5 w-5 text-gray-300"
-              title="WhatsApp not available"
-            />
+            <div 
+              className="text-gray-300" 
+              aria-label="WhatsApp not available"
+            >
+              <MessageCircle className="h-5 w-5" />
+            </div>
           )}
         </div>
         {/* View Details Link */}
