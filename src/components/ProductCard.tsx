@@ -1,4 +1,4 @@
-import { WhatsappIcon } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
 interface ProductCardProps {
   id: number;
@@ -40,7 +40,7 @@ export const ProductCard = ({
               rel="noopener noreferrer"
               className="flex items-center gap-1 rounded-full bg-[#25D366] px-3 py-1.5 text-sm font-medium text-white transition-transform hover:scale-105"
             >
-              <WhatsappIcon className="h-4 w-4" />
+              <MessageSquare className="h-4 w-4" />
               Chat
             </a>
           )}
