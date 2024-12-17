@@ -1,17 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
-import { Search, Menu, ChevronDown, ArrowRight, Shield, MessageCircle } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { Header } from "@/components/home/Header";
+import { HeroSection } from "@/components/home/HeroSection";
 import { SafetyBanner } from "@/components/SafetyBanner";
+import { Link } from "react-router-dom";
+import { ArrowRight, Shield, MessageCircle } from "lucide-react";
 
 // Temporary mock data and functions until backend is integrated
 const useLanguage = () => ({ language: "en", toggleLanguage: () => {} });
 const useCategories = () => ({ data: [], isLoading: false });
 const linkService = { getActivePermanentLinks: async () => [] };
-const useUser = () => null;
 const formatCurrency = (price: number, currency: string) => `${currency} ${price}`;
 
 export default function Index() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const { language, toggleLanguage } = useLanguage();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: activeProducts, isLoading: loadingProducts } = useQuery({
@@ -19,7 +24,16 @@ export default function Index() {
     queryFn: () => linkService.getActivePermanentLinks(),
   });
 
-  const user = useUser();
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth/login");
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   const MAX_CAPACITY = 120;
   const FEATURED_COUNT = 12;
@@ -38,66 +52,10 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-4">
-              <button className="lg:hidden" aria-label="Menu">
-                <Menu className="h-6 w-6 text-[#002C5F]" />
-              </button>
-              <Link to="/">
-                <img src="/placeholder.svg" alt="PushNshop" className="h-10 w-10" />
-              </Link>
-            </div>
-
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center gap-1 text-sm text-[#002C5F]"
-            >
-              {language.toUpperCase()}
-              <ChevronDown className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* Search Bar */}
-          <div className="py-3">
-            <div className="relative">
-              <input
-                type="search"
-                placeholder={
-                  language === "en" ? "Search products..." : "Rechercher des produits..."
-                }
-                className="w-full pl-4 pr-10 py-2 rounded-full border border-gray-200 focus:outline-none focus:border-[#005BBB]"
-              />
-              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
-            </div>
-          </div>
-        </div>
-      </header>
-
+      <Header language={language} toggleLanguage={toggleLanguage} />
       <SafetyBanner />
-
-      {/* Hero Section */}
-      <section className="bg-[#005BBB] text-white py-12 md:py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">Snap, Sell, Smile</h1>
-          <p className="text-xl md:text-2xl mb-8">
-            {language === "en"
-              ? "Quick Local Deals Await!"
-              : "Des offres locales rapides vous attendent !"}
-          </p>
-          <Button
-            onClick={() =>
-              (window.location.href = user ? "/seller/dashboard" : "/auth/register")
-            }
-            className="bg-[#F7941D] text-white px-8 py-3 rounded-full font-medium hover:bg-opacity-90 transition-colors"
-          >
-            {language === "en" ? "Start Selling" : "Commencer à vendre"}
-          </Button>
-        </div>
-      </section>
-
+      <HeroSection language={language} />
+      
       {/* Featured Products (Top 12) */}
       <section className="py-8 md:py-12">
         <div className="container mx-auto px-4">
