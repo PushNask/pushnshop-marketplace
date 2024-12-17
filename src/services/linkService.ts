@@ -64,18 +64,5 @@ export const linkService = {
 
     if (error) throw error;
     return data;
-  },
-
-  async getLinkAnalytics(linkId: string, dateRange: { from: Date; to: Date }) {
-    const { data, error } = await supabase
-      .from('link_performance_history')
-      .select('*')
-      .eq('link_id', linkId)
-      .gte('date', dateRange.from.toISOString())
-      .lte('date', dateRange.to.toISOString())
-      .order('date', { ascending: true });
-
-    if (error) throw error;
-    return data;
   }
 };
