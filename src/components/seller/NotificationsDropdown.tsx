@@ -16,11 +16,11 @@ interface Notification {
 }
 
 export function NotificationsDropdown() {
-  const { data: notifications = [] } = useQuery<Notification[]>(
-    ["notifications"],
-    () => [], // Replace with actual notifications fetch
-    { initialData: [] }
-  );
+  const { data: notifications = [] } = useQuery<Notification[]>({
+    queryKey: ["notifications"],
+    queryFn: () => [], // Replace with actual notifications fetch
+    initialData: []
+  });
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 

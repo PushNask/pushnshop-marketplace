@@ -26,25 +26,46 @@ import { MetricCard } from "@/components/seller/MetricCard";
 import { NotificationsDropdown } from "@/components/seller/NotificationsDropdown";
 import { SidebarLink } from "@/components/seller/SidebarLink";
 
+interface SellerMetrics {
+  activeListings: number;
+  totalViews: number;
+  whatsappClicks: number;
+  listingsTrend: number;
+  viewsTrend: number;
+  clicksTrend: number;
+}
+
+interface SellerProfile {
+  name: string;
+  businessName: string;
+  avatar: string | null;
+}
+
 export default function SellerDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { language, toggleLanguage } = useLanguage();
   const navigate = useNavigate();
 
-  const { data: metrics } = useQuery(["seller-metrics"], () => ({
-    activeListings: 5,
-    totalViews: 1250,
-    whatsappClicks: 85,
-    listingsTrend: 0.15,
-    viewsTrend: 0.08,
-    clicksTrend: 0.12,
-  }));
+  const { data: metrics } = useQuery<SellerMetrics>({
+    queryKey: ["seller-metrics"],
+    queryFn: () => ({
+      activeListings: 5,
+      totalViews: 1250,
+      whatsappClicks: 85,
+      listingsTrend: 0.15,
+      viewsTrend: 0.08,
+      clicksTrend: 0.12,
+    })
+  });
 
-  const { data: profile } = useQuery(["seller-profile"], () => ({
-    name: "John Doe",
-    businessName: "JD Electronics",
-    avatar: null,
-  }));
+  const { data: profile } = useQuery<SellerProfile>({
+    queryKey: ["seller-profile"],
+    queryFn: () => ({
+      name: "John Doe",
+      businessName: "JD Electronics",
+      avatar: null,
+    })
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
