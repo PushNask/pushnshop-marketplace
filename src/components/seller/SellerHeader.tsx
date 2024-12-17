@@ -1,15 +1,14 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Menu, ChevronDown, User, Settings, LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NotificationsDropdown } from "./NotificationsDropdown";
+import { UserMenuContent } from "@/components/shared/navigation/UserMenuContent";
 import { useLanguage } from "@/hooks/useLanguage";
 
 interface SellerHeaderProps {
@@ -22,7 +21,6 @@ interface SellerHeaderProps {
 
 export function SellerHeader({ profile, onMenuClick }: SellerHeaderProps) {
   const { language, toggleLanguage } = useLanguage();
-  const navigate = useNavigate();
 
   return (
     <header className="bg-white border-b border-gray-200 fixed w-full z-10">
@@ -64,22 +62,10 @@ export function SellerHeader({ profile, onMenuClick }: SellerHeaderProps) {
                       {profile?.name?.charAt(0) || "S"}
                     </AvatarFallback>
                   </Avatar>
-                  <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate("/seller/profile")}>
-                  <User className="h-4 w-4 mr-2" />
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/seller/settings")}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </DropdownMenuItem>
+                <UserMenuContent />
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
