@@ -15,12 +15,15 @@ export default function SellerDashboard() {
       />
 
       {/* Sidebar */}
-      <aside className={`
-        fixed inset-y-0 left-0 z-20 w-64 bg-white border-r border-gray-200 
-        transform transition-transform duration-200 ease-in-out
-        lg:translate-x-0 lg:static lg:h-full
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
+      <aside 
+        className={`
+          fixed inset-y-0 left-0 z-20 w-64 bg-white border-r border-gray-200 
+          transform transition-transform duration-200 ease-in-out
+          lg:translate-x-0 lg:static lg:h-full
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+        aria-label="Seller navigation"
+      >
         <div className="flex flex-col h-full pt-16">
           <div className="flex-1 px-4 space-y-1 mt-4">
             <SellerNavLinks />
@@ -40,6 +43,7 @@ export default function SellerDashboard() {
         <div 
           className="fixed inset-0 z-10 bg-gray-600 bg-opacity-50 lg:hidden"
           onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
         />
       )}
     </div>

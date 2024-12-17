@@ -24,7 +24,7 @@ export function SellerNavLinks() {
   ];
 
   return (
-    <nav className="flex-1 space-y-1">
+    <nav className="flex-1 space-y-1" aria-label="Seller sidebar navigation">
       {links.map((link) => (
         <SidebarLink
           key={link.to}

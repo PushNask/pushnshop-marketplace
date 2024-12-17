@@ -15,12 +15,14 @@ export function SidebarLink({ to, icon, label }: SidebarLinkProps) {
       to={to}
       className={`
         flex items-center gap-3 px-3 py-2 rounded-md text-sm
+        transition-colors duration-200
         ${
           isActive
             ? "bg-blue-50 text-blue-600"
             : "text-gray-600 hover:bg-gray-50"
         }
       `}
+      aria-current={isActive ? "page" : undefined}
     >
       {icon}
       <span>{label}</span>
