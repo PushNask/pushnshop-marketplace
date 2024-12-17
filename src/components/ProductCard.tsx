@@ -80,7 +80,7 @@ export function ProductCard({
           ) : (
             <MessageCircle
               className="h-5 w-5 text-gray-300"
-              title="WhatsApp not available"
+              aria-label="WhatsApp not available"
             />
           )}
         </div>

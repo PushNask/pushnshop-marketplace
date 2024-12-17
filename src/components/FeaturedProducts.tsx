@@ -26,9 +26,25 @@ export const FeaturedProducts = () => {
       <div className="container">
         <h2 className="mb-8 text-3xl font-bold">Featured Deals</h2>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {FEATURED_PRODUCTS.map((product) => (
-            <ProductCard key={product.id} {...product} />
-          ))}
+          {FEATURED_PRODUCTS.map((item, index) => {
+            // Transform the item data to match the Product interface
+            const product = {
+              title: item.title,
+              price: item.price,
+              images: [item.image],
+              seller_whatsapp: item.whatsappNumber,
+            };
+            
+            return (
+              <ProductCard
+                key={item.id}
+                product={product}
+                language="en"
+                formatCurrency={(price, currency) => `${currency} ${price}`}
+                linkNumber={index + 1}
+              />
+            );
+          })}
         </div>
       </div>
     </section>
