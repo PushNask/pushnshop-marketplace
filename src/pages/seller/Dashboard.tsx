@@ -1,12 +1,24 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Outlet } from "react-router-dom";
-import { X, ShoppingBag, BarChart, User, Plus } from "lucide-react";
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { 
+  ShoppingBag, 
+  BarChart, 
+  User, 
+  Bell,
+  Plus,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+  ChevronDown
+} from 'lucide-react';
 import { SellerHeader } from "@/components/seller/SellerHeader";
 import { MetricsOverview } from "@/components/seller/MetricsOverview";
 import { SidebarLink } from "@/components/seller/SidebarLink";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from '@/hooks/useLanguage';
+import { useNavigate } from 'react-router-dom';
 
 interface SellerMetrics {
   activeListings: number;
@@ -25,47 +37,57 @@ interface SellerProfile {
 
 export default function SellerDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { language, toggleLanguage } = useLanguage();
+  const navigate = useNavigate();
 
   const { data: metrics } = useQuery({
-    queryKey: ["seller-metrics"],
+    queryKey: ['seller-metrics'],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const { data: products } = await supabase
         .from('products')
-        .select('id, views_count, whatsapp_clicks')
+        .select('id, status, analytics:analytics_events(views:views_count, clicks:whatsapp_clicks)')
         .eq('seller_id', user.id)
         .eq('status', 'active');
 
-      const activeListings = products?.length || 0;
-      const totalViews = products?.reduce((sum, p) => sum + (p.views_count || 0), 0) || 0;
-      const whatsappClicks = products?.reduce((sum, p) => sum + (p.whatsapp_clicks || 0), 0) || 0;
+      if (!products) return null;
+
+      const activeListings = products.length;
+      const totalViews = products.reduce((sum, p) => sum + (p.analytics?.[0]?.views || 0), 0);
+      const whatsappClicks = products.reduce((sum, p) => sum + (p.analytics?.[0]?.clicks || 0), 0);
 
       return {
         activeListings,
         totalViews,
         whatsappClicks,
-        listingsTrend: 0.15, // TODO: Calculate real trends
+        listingsTrend: 0.15,
         viewsTrend: 0.08,
         clicksTrend: 0.12
-      };
+      } as SellerMetrics;
     }
   });
 
   const { data: profile } = useQuery({
-    queryKey: ["seller-profile"],
+    queryKey: ['seller-profile'],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('name, business_name, avatar')
+        .select('name, whatsapp_number')
         .eq('id', user.id)
         .single();
 
-      return profile;
+      if (!profile) throw new Error('Profile not found');
+
+      return {
+        name: profile.name || 'Seller',
+        businessName: profile.name || 'Business',
+        avatar: null
+      } as SellerProfile;
     }
   });
 
@@ -126,7 +148,6 @@ export default function SellerDashboard() {
       <main className="lg:pl-64 pt-16">
         <div className="p-6">
           <MetricsOverview metrics={metrics} />
-          <Outlet />
         </div>
       </main>
     </div>
