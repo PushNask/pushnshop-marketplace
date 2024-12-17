@@ -1,51 +1,96 @@
-import { MessageSquare } from "lucide-react";
+import { Link } from "react-router-dom";
+import { MessageCircle, Shield } from "lucide-react";
 
-interface ProductCardProps {
-  id: number;
+interface Product {
   title: string;
   price: number;
-  image: string;
-  isFeatured?: boolean;
-  whatsappNumber?: string;
+  currency?: string;
+  images?: string[];
+  description?: string;
+  time_remaining?: number;
+  is_verified?: boolean;
+  seller_whatsapp?: string;
 }
 
-export const ProductCard = ({
-  id,
-  title,
-  price,
-  image,
-  isFeatured,
-  whatsappNumber,
-}: ProductCardProps) => {
+interface ProductCardProps {
+  product: Product;
+  language: string;
+  formatCurrency: (price: number, currency: string) => string;
+  linkNumber: number;
+}
+
+export function ProductCard({
+  product,
+  language,
+  formatCurrency,
+  linkNumber,
+}: ProductCardProps) {
+  const price = formatCurrency(product.price, product.currency || "XAF");
+  const productLink = `/p${linkNumber}`;
+  const detailsLink = `/p${linkNumber}/details`;
+
   return (
-    <div className="product-card animate-fade-up">
-      {isFeatured && <span className="featured-badge">Featured</span>}
-      <img src={image} alt={title} className="h-48 w-full object-cover" />
+    <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+      <Link to={productLink} className="block aspect-square bg-gray-100 relative">
+        {product.images?.[0] ? (
+          <img
+            src={product.images[0]}
+            alt={product.title}
+            className="object-cover w-full h-full"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-200">
+            <span className="text-gray-400 text-sm">No Image</span>
+          </div>
+        )}
+        {product.time_remaining && (
+          <span className="absolute top-2 right-2 bg-[#005BBB] text-white text-xs px-2 py-1 rounded">
+            {product.time_remaining}h left
+          </span>
+        )}
+        {product.is_verified && (
+          <span className="absolute top-2 left-2 bg-[#F7941D] text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+            <Shield className="h-3 w-3" />
+            {language === "en" ? "Verified" : "Vérifié"}
+          </span>
+        )}
+      </Link>
       <div className="p-4">
-        <h3 className="text-lg font-semibold line-clamp-1">{title}</h3>
-        <p className="mt-1 text-lg font-bold text-primary">
-          ${price.toLocaleString()}
+        <h3 className="font-medium mb-2 truncate">{product.title}</h3>
+        <p className="text-sm text-gray-600 mb-2 truncate">
+          {product.description ||
+            (language === "en" ? "No description" : "Pas de description")}
         </p>
-        <div className="mt-4 flex items-center justify-between">
-          <a
-            href={`/p${id}`}
-            className="text-sm font-medium text-muted-foreground hover:text-foreground"
-          >
-            View Details
-          </a>
-          {whatsappNumber && (
+        <div className="flex justify-between items-center mb-2">
+          <span className="font-bold text-[#002C5F]">{price}</span>
+          {product.seller_whatsapp ? (
             <a
-              href={`https://wa.me/${whatsappNumber}`}
+              href={`https://wa.me/${
+                product.seller_whatsapp
+              }?text=${encodeURIComponent(
+                `Hello, I'm interested in: ${product.title}`
+              )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 rounded-full bg-[#25D366] px-3 py-1.5 text-sm font-medium text-white transition-transform hover:scale-105"
+              className="text-[#F7941D] hover:text-[#005BBB] transition-colors"
+              aria-label="Contact seller on WhatsApp"
             >
-              <MessageSquare className="h-4 w-4" />
-              Chat
+              <MessageCircle className="h-5 w-5" />
             </a>
+          ) : (
+            <MessageCircle
+              className="h-5 w-5 text-gray-300"
+              title="WhatsApp not available"
+            />
           )}
         </div>
+        <Link
+          to={detailsLink}
+          className="text-sm text-[#005BBB] underline hover:no-underline"
+        >
+          {language === "en" ? "View Details" : "Voir les détails"}
+        </Link>
       </div>
     </div>
   );
-};
+}
