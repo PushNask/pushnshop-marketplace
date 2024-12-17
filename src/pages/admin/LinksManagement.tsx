@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { OverviewSection } from '@/components/links/OverviewSection';
 import { FiltersSection } from '@/components/links/FiltersSection';
 import { LinksList } from '@/components/links/LinksList';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { LinkAnalyticsDashboard } from '@/components/links/LinkAnalyticsDashboard';
+import { LinkPerformanceChart } from '@/components/links/LinkPerformanceChart';
 import { linkService } from '@/services/linkService';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import type { Link, LinkFilters } from '@/types/links';
 
 export default function LinksManagement() {
@@ -20,27 +20,32 @@ export default function LinksManagement() {
     search: '',
     dateRange: null,
     page: 1,
-    perPage: 120 // Show all 120 links at once
+    perPage: 120
   });
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['links', filters],
-    queryFn: () => linkService.getLinks(filters)
+    queryFn: () => linkService.getLinks(filters),
+    onError: () => {
+      toast({
+        title: "Error loading links",
+        description: "There was a problem loading the links. Please try again.",
+        variant: "destructive"
+      });
+    }
   });
 
   if (error) {
-    toast({
-      title: "Error loading links",
-      description: "There was a problem loading the links. Please try again.",
-      variant: "destructive"
-    });
+    return (
+      <div className="p-8 text-center">
+        <div className="mb-4 text-red-600">Failed to load links</div>
+        <Button onClick={() => refetch()}>Try Again</Button>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      {/* Overview Section */}
-      <OverviewSection />
-
       {/* Links Management */}
       <Card>
         <CardHeader>
@@ -101,6 +106,12 @@ export default function LinksManagement() {
                     <label className="text-sm text-gray-500">WhatsApp Clicks</label>
                     <p className="font-medium">{selectedLink.whatsapp_clicks}</p>
                   </div>
+                </div>
+                
+                {/* Performance Chart */}
+                <div className="mt-6">
+                  <h4 className="font-medium mb-4">Performance History</h4>
+                  <LinkPerformanceChart linkId={selectedLink.id} />
                 </div>
               </div>
 
