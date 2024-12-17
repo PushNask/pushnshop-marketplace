@@ -14,6 +14,15 @@ export function OtherListings({
   featuredCount,
   formatCurrency,
 }: OtherListingsProps) {
+  const MAX_LINKS = 120;
+  const remainingCount = MAX_LINKS - featuredCount;
+
+  // Create a consistent array of length 120 (products + placeholders)
+  const filledProducts = [
+    ...products.slice(0, remainingCount),
+    ...Array(remainingCount - products.length).fill(null)
+  ];
+
   return (
     <section className="py-8 bg-white">
       <div className="container mx-auto px-4">
@@ -21,7 +30,7 @@ export function OtherListings({
           {language === "en" ? "All Listings" : "Toutes les annonces"}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {products.map((product, i) => {
+          {filledProducts.map((product, i) => {
             const linkNumber = featuredCount + i + 1;
             return product ? (
               <ProductCard
