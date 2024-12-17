@@ -8,6 +8,8 @@ import { LanguageProvider } from "@/hooks/useLanguage";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import SellerDashboard from "./pages/seller/Dashboard";
+import AdminDashboard from "./pages/admin/Dashboard";
+import NewListing from "./pages/seller/NewListing";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +23,10 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/auth/login" element={<Login />} />
-              <Route path="/seller/*" element={<SellerDashboard />} />
+              <Route path="/seller/*" element={<SellerDashboard />}>
+                <Route path="products/new" element={<NewListing />} />
+              </Route>
+              <Route path="/admin/*" element={<AdminDashboard />} />
               <Route path="/" element={<Index />} />
             </Routes>
           </BrowserRouter>
