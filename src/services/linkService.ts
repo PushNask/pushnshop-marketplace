@@ -25,8 +25,8 @@ export const linkService = {
     }
 
     if (filters.search) {
-      // Fix the search query syntax for related tables
-      query = query.or(`path.ilike.%${filters.search}%,products!inner(title.ilike.%${filters.search}%)`);
+      // Use proper PostgREST syntax for searching
+      query = query.or(`path.ilike.%${filters.search}%,product.title.ilike.%${filters.search}%`);
     }
 
     if (filters.dateRange) {
