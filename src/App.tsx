@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
+import SellerDashboard from "./pages/seller/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/auth/login" element={<Login />} />
+              <Route path="/seller/*" element={<SellerDashboard />} />
               <Route path="/" element={<Index />} />
             </Routes>
           </BrowserRouter>
