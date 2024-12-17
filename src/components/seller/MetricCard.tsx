@@ -1,15 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { LucideIcon } from "lucide-react";
 
 interface MetricCardProps {
   title: string;
   value: number | string;
   trend?: number;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
 }
 
 export function MetricCard({ title, value, trend, icon }: MetricCardProps) {
-  const trendColor = trend && trend >= 0 ? "text-green-600" : "text-red-600";
+  const trendColor = trend && trend >= 0 ? 'text-green-600' : 'text-red-600';
   const trendValue = trend ? `${(trend * 100).toFixed(1)}%` : null;
 
   return (
@@ -23,7 +22,7 @@ export function MetricCard({ title, value, trend, icon }: MetricCardProps) {
           <span className="text-2xl font-semibold">{value}</span>
           {trendValue && (
             <span className={`text-sm ${trendColor}`}>
-              {trend >= 0 ? "↑" : "↓"} {trendValue}
+              {trend >= 0 ? '↑' : '↓'} {trendValue}
             </span>
           )}
         </div>
