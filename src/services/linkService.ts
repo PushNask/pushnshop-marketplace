@@ -1,13 +1,14 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Link, LinkFilters, LinkMetrics } from '@/types/links';
+import type { Link, LinkFilters } from '@/types/links';
 
 export const linkService = {
-  async getLinks(filters: LinkFilters): Promise<Link[]> {
+  async getLinks(filters: LinkFilters) {
     let query = supabase
       .from('permanent_links')
       .select(`
         *,
         product:products (
+          id,
           title,
           price,
           images,
@@ -17,70 +18,64 @@ export const linkService = {
             whatsapp_number
           )
         )
-      `);
+      `, { count: 'exact' });
 
     if (filters.status !== 'all') {
       query = query.eq('status', filters.status);
     }
 
     if (filters.search) {
-      query = query.or(`
-        path.ilike.%${filters.search}%,
-        products.title.ilike.%${filters.search}%
-      `);
+      query = query.or(`path.ilike.%${filters.search}%,product.title.ilike.%${filters.search}%`);
     }
 
-    switch (filters.sortBy) {
-      case 'performance':
-        query = query.order('performance_score', { ascending: false });
-        break;
-      case 'views':
-        query = query.order('views_count', { ascending: false });
-        break;
-      case 'clicks':
-        query = query.order('whatsapp_clicks', { ascending: false });
-        break;
-      case 'rotations':
-        query = query.order('rotation_count', { ascending: false });
-        break;
+    if (filters.dateRange) {
+      query = query.gte('created_at', filters.dateRange.from.toISOString())
+        .lte('created_at', filters.dateRange.to.toISOString());
     }
 
-    const { data, error } = await query;
+    const sortMapping = {
+      performance: 'performance_score',
+      views: 'views_count',
+      clicks: 'whatsapp_clicks',
+      rotations: 'rotation_count'
+    };
+
+    query = query.order(sortMapping[filters.sortBy], { ascending: false })
+      .range(
+        (filters.page - 1) * filters.perPage,
+        filters.page * filters.perPage - 1
+      );
+
+    const { data, error, count } = await query;
     if (error) throw error;
-    return data as unknown as Link[];
-  },
-
-  async getMetrics(): Promise<LinkMetrics> {
-    const { data: links, error } = await supabase
-      .from('permanent_links')
-      .select('status, performance_score, views_count')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    const activeLinks = links.filter(l => l.status === 'active').length;
-    const availableLinks = 120 - activeLinks;
-    const performances = links.map(l => l.performance_score || 0);
-    const averagePerformance = performances.reduce((a, b) => a + b, 0) / performances.length;
-
-    // Calculate today's views
-    const today = new Date().toISOString().split('T')[0];
-    const { data: todayStats, error: statsError } = await supabase
-      .from('analytics_events')
-      .select('count')
-      .eq('event_type', 'link_view')
-      .gte('created_at', today);
-
-    if (statsError) throw statsError;
 
     return {
-      activeLinks,
-      availableLinks,
-      averagePerformance,
-      todayViews: todayStats?.length || 0,
-      activeTrend: 0.05, // TODO: Calculate real trends
-      performanceTrend: 0.12,
-      viewsTrend: 0.08
+      links: data as Link[],
+      totalCount: count || 0
     };
+  },
+
+  async updateLink(id: string, updates: Partial<Link>) {
+    const { data, error } = await supabase
+      .from('permanent_links')
+      .update(updates)
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async getLinkAnalytics(linkId: string, dateRange: { from: Date; to: Date }) {
+    const { data, error } = await supabase
+      .from('link_performance_history')
+      .select('*')
+      .eq('link_id', linkId)
+      .gte('date', dateRange.from.toISOString())
+      .lte('date', dateRange.to.toISOString())
+      .order('date', { ascending: true });
+
+    if (error) throw error;
+    return data;
   }
 };

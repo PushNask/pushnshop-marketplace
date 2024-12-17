@@ -1,38 +1,44 @@
 export interface Link {
-  id: number;
+  id: string;
   path: string;
-  product_id: string;
+  product_id: string | null;
   status: 'available' | 'active';
   performance_score: number;
   views_count: number;
   whatsapp_clicks: number;
-  facebook_shares: number;
   rotation_count: number;
-  last_assigned: string;
+  last_assigned: string | null;
+  meta_title?: string;
+  meta_description?: string;
+  seo_data?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
   product?: {
+    id: string;
     title: string;
     price: number;
     images: string[];
     description: string;
     seller: {
       name: string;
-      whatsapp: string;
+      whatsapp_number: string;
     };
   };
-}
-
-export interface LinkMetrics {
-  activeLinks: number;
-  availableLinks: number;
-  averagePerformance: number;
-  todayViews: number;
-  activeTrend?: number;
-  performanceTrend?: number;
-  viewsTrend?: number;
 }
 
 export interface LinkFilters {
   status: 'all' | 'active' | 'available';
   sortBy: 'performance' | 'views' | 'clicks' | 'rotations';
   search: string;
+  dateRange: { from: Date; to: Date } | null;
+  page: number;
+  perPage: number;
+}
+
+export interface LinkAnalytics {
+  date: string;
+  views: number;
+  whatsapp_clicks: number;
+  avg_time_on_page: number;
+  performance_score: number;
 }
