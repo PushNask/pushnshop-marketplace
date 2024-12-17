@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
+import { Header } from "@/components/shared/Header";
+import { Footer } from "@/components/shared/Footer";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import SellerDashboard from "./pages/seller/Dashboard";
@@ -23,17 +25,23 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/auth/login" element={<Login />} />
-              <Route path="/seller/*" element={<SellerDashboard />}>
-                <Route path="products/new" element={<NewListing />} />
-              </Route>
-              <Route path="/admin/*" element={<AdminDashboard />}>
-                <Route path="links" element={<LinksManagement />} />
-                <Route path="products" element={<ProductManagement />} />
-              </Route>
-              <Route path="/" element={<Index />} />
-            </Routes>
+            <div className="min-h-screen flex flex-col">
+              <Header />
+              <main className="flex-1">
+                <Routes>
+                  <Route path="/auth/login" element={<Login />} />
+                  <Route path="/seller/*" element={<SellerDashboard />}>
+                    <Route path="products/new" element={<NewListing />} />
+                  </Route>
+                  <Route path="/admin/*" element={<AdminDashboard />}>
+                    <Route path="links" element={<LinksManagement />} />
+                    <Route path="products" element={<ProductManagement />} />
+                  </Route>
+                  <Route path="/" element={<Index />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>
