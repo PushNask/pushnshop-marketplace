@@ -8,6 +8,7 @@ import { LinksList } from '@/components/links/LinksList';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { LinkAnalyticsDashboard } from '@/components/links/LinkAnalyticsDashboard';
 import { linkService } from '@/services/linkService';
+import { toast } from '@/components/ui/use-toast';
 import type { Link, LinkFilters } from '@/types/links';
 
 export default function LinksManagement() {
@@ -19,16 +20,21 @@ export default function LinksManagement() {
     search: '',
     dateRange: null,
     page: 1,
-    perPage: 20
+    perPage: 120 // Show all 120 links at once
   });
 
-  const { data } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['links', filters],
     queryFn: () => linkService.getLinks(filters)
   });
 
-  const links = data?.links || [];
-  const totalCount = data?.totalCount || 0;
+  if (error) {
+    toast({
+      title: "Error loading links",
+      description: "There was a problem loading the links. Please try again.",
+      variant: "destructive"
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -53,10 +59,14 @@ export default function LinksManagement() {
           />
 
           {/* Links Grid */}
-          <LinksList 
-            links={links}
-            onView={setSelectedLink}
-          />
+          {isLoading ? (
+            <div className="text-center py-8">Loading links...</div>
+          ) : (
+            <LinksList 
+              links={data?.links || []}
+              onView={setSelectedLink}
+            />
+          )}
         </CardContent>
       </Card>
 
