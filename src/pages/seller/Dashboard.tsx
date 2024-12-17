@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/hooks/useLanguage";
-import { useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
+import { X, ShoppingBag, BarChart, User } from "lucide-react";
 import { SellerHeader } from "@/components/seller/SellerHeader";
 import { MetricsOverview } from "@/components/seller/MetricsOverview";
 import { SidebarLink } from "@/components/seller/SidebarLink";
+import { Button } from "@/components/ui/button";
 
 interface SellerMetrics {
   activeListings: number;
@@ -25,7 +24,6 @@ interface SellerProfile {
 
 export default function SellerDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const navigate = useNavigate();
 
   const { data: metrics } = useQuery<SellerMetrics>({
     queryKey: ["seller-metrics"],
@@ -97,7 +95,7 @@ export default function SellerDashboard() {
           <div className="p-4">
             <Button
               className="w-full"
-              onClick={() => navigate("/seller/products/new")}
+              onClick={() => window.location.href = "/seller/products/new"}
             >
               <Plus className="h-4 w-4 mr-2" />
               New Listing
