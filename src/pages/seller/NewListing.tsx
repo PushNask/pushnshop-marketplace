@@ -91,7 +91,7 @@ export default function NewListing() {
 
   const createProduct = useMutation({
     mutationFn: async (data: ProductFormValues) => {
-      const { data: user } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       // Upload images first
@@ -424,9 +424,9 @@ export default function NewListing() {
                 </div>
                 <Button
                   type="submit"
-                  disabled={createProduct.isLoading}
+                  disabled={createProduct.isPending}
                 >
-                  {createProduct.isLoading && (
+                  {createProduct.isPending && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
                   {language === 'en' ? 'Create Listing' : 'Créer l\'Annonce'}

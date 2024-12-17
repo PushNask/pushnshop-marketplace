@@ -46,17 +46,32 @@ export default function SellerDashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // First get all active products
       const { data: products } = await supabase
         .from('products')
-        .select('id, status, analytics:analytics_events(views:views_count, clicks:whatsapp_clicks)')
+        .select(`
+          id,
+          status,
+          analytics_events (
+            event_type,
+            metadata
+          )
+        `)
         .eq('seller_id', user.id)
         .eq('status', 'active');
 
       if (!products) return null;
 
+      // Calculate metrics from analytics events
       const activeListings = products.length;
-      const totalViews = products.reduce((sum, p) => sum + (p.analytics?.[0]?.views || 0), 0);
-      const whatsappClicks = products.reduce((sum, p) => sum + (p.analytics?.[0]?.clicks || 0), 0);
+      const totalViews = products.reduce((sum, product) => {
+        const viewEvents = product.analytics_events?.filter(e => e.event_type === 'view') || [];
+        return sum + viewEvents.length;
+      }, 0);
+      const whatsappClicks = products.reduce((sum, product) => {
+        const clickEvents = product.analytics_events?.filter(e => e.event_type === 'whatsapp_click') || [];
+        return sum + clickEvents.length;
+      }, 0);
 
       return {
         activeListings,
