@@ -26,12 +26,17 @@ export default function LinksManagement() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['links', filters],
     queryFn: () => linkService.getLinks(filters),
-    onError: () => {
-      toast({
-        title: "Error loading links",
-        description: "There was a problem loading the links. Please try again.",
-        variant: "destructive"
-      });
+    meta: {
+      errorMessage: "There was a problem loading the links. Please try again."
+    },
+    onSettled: (data, error) => {
+      if (error) {
+        toast({
+          title: "Error loading links",
+          description: "There was a problem loading the links. Please try again.",
+          variant: "destructive"
+        });
+      }
     }
   });
 
