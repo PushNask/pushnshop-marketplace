@@ -92,11 +92,13 @@ export function AdminHeader({
 
       <div className="px-6 py-3 border-t border-gray-200">
         <div className="flex gap-4">
-          <Input 
-            placeholder={language === 'en' ? "Search..." : "Rechercher..."}
-            className="max-w-md"
-            startIcon={<Search className="h-4 w-4 text-gray-400" />}
-          />
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input 
+              placeholder={language === 'en' ? "Search..." : "Rechercher..."}
+              className="pl-10"
+            />
+          </div>
           <SecurityMetrics 
             score={metrics?.securityScore}
             alerts={metrics?.activeAlerts}
