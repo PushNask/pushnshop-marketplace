@@ -41,6 +41,47 @@ export type Database = {
           },
         ]
       }
+      link_performance_history: {
+        Row: {
+          avg_time_on_page: number | null
+          created_at: string | null
+          date: string
+          id: string
+          link_id: string
+          performance_score: number | null
+          views: number | null
+          whatsapp_clicks: number | null
+        }
+        Insert: {
+          avg_time_on_page?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          link_id: string
+          performance_score?: number | null
+          views?: number | null
+          whatsapp_clicks?: number | null
+        }
+        Update: {
+          avg_time_on_page?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          link_id?: string
+          performance_score?: number | null
+          views?: number | null
+          whatsapp_clicks?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_performance_history_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "permanent_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -82,12 +123,16 @@ export type Database = {
       permanent_links: {
         Row: {
           created_at: string | null
+          historical_performance: Json | null
           id: string
           last_assigned: string | null
+          meta_description: string | null
+          meta_title: string | null
           path: string
           performance_score: number | null
           product_id: string | null
           rotation_count: number | null
+          seo_data: Json | null
           status: string
           updated_at: string | null
           views_count: number | null
@@ -95,12 +140,16 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          historical_performance?: Json | null
           id?: string
           last_assigned?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
           path: string
           performance_score?: number | null
           product_id?: string | null
           rotation_count?: number | null
+          seo_data?: Json | null
           status?: string
           updated_at?: string | null
           views_count?: number | null
@@ -108,12 +157,16 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          historical_performance?: Json | null
           id?: string
           last_assigned?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
           path?: string
           performance_score?: number | null
           product_id?: string | null
           rotation_count?: number | null
+          seo_data?: Json | null
           status?: string
           updated_at?: string | null
           views_count?: number | null
@@ -218,6 +271,14 @@ export type Database = {
           rotation_count: number
         }
         Returns: number
+      }
+      export_links_data: {
+        Args: {
+          format: string
+          start_date: string
+          end_date: string
+        }
+        Returns: string
       }
     }
     Enums: {
