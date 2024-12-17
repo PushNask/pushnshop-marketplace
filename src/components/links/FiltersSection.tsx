@@ -13,12 +13,15 @@ interface FiltersSectionProps {
 export function FiltersSection({ filters, onFiltersChange }: FiltersSectionProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <Input
-        placeholder="Search links..."
-        value={filters.search}
-        onChange={(e) => onFiltersChange({ ...filters, search: e.target.value, page: 1 })}
-        leftIcon={<Search className="h-4 w-4" />}
-      />
+      <div className="relative">
+        <Input
+          placeholder="Search links..."
+          value={filters.search}
+          onChange={(e) => onFiltersChange({ ...filters, search: e.target.value, page: 1 })}
+          className="pl-10"
+        />
+        <Search className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
+      </div>
       
       <Select
         value={filters.status}
