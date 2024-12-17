@@ -41,6 +41,101 @@ export type Database = {
           },
         ]
       }
+      link_analytics_events: {
+        Row: {
+          created_at: string | null
+          duration: number | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          link_id: string
+          metadata: Json | null
+          referrer: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration?: number | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          link_id: string
+          metadata?: Json | null
+          referrer?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration?: number | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          link_id?: string
+          metadata?: Json | null
+          referrer?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_analytics_events_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "permanent_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      link_assignments: {
+        Row: {
+          assigned_at: string | null
+          expired_at: string | null
+          id: string
+          link_id: string
+          performance_score: number | null
+          product_id: string
+          total_clicks: number | null
+          total_shares: number | null
+          total_views: number | null
+        }
+        Insert: {
+          assigned_at?: string | null
+          expired_at?: string | null
+          id?: string
+          link_id: string
+          performance_score?: number | null
+          product_id: string
+          total_clicks?: number | null
+          total_shares?: number | null
+          total_views?: number | null
+        }
+        Update: {
+          assigned_at?: string | null
+          expired_at?: string | null
+          id?: string
+          link_id?: string
+          performance_score?: number | null
+          product_id?: string
+          total_clicks?: number | null
+          total_shares?: number | null
+          total_views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_assignments_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "permanent_links"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "link_assignments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       link_performance_history: {
         Row: {
           avg_time_on_page: number | null
@@ -123,6 +218,8 @@ export type Database = {
       permanent_links: {
         Row: {
           created_at: string | null
+          expires_at: string | null
+          facebook_shares: number | null
           historical_performance: Json | null
           id: string
           last_assigned: string | null
@@ -140,6 +237,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          expires_at?: string | null
+          facebook_shares?: number | null
           historical_performance?: Json | null
           id?: string
           last_assigned?: string | null
@@ -157,6 +256,8 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          expires_at?: string | null
+          facebook_shares?: number | null
           historical_performance?: Json | null
           id?: string
           last_assigned?: string | null
@@ -269,6 +370,16 @@ export type Database = {
           views: number
           clicks: number
           rotation_count: number
+        }
+        Returns: number
+      }
+      calculate_link_performance_score: {
+        Args: {
+          p_views: number
+          p_clicks: number
+          p_shares: number
+          p_time_on_page: number
+          p_bounce_rate: number
         }
         Returns: number
       }
