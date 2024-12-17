@@ -26,11 +26,13 @@ export interface Link {
   };
 }
 
+import { DateRange } from "react-day-picker";
+
 export interface LinkFilters {
   status: 'all' | 'active' | 'available';
   sortBy: 'performance' | 'views' | 'clicks' | 'rotations';
   search: string;
-  dateRange: { from: Date; to: Date } | null;
+  dateRange: DateRange | null;
   page: number;
   perPage: number;
 }
