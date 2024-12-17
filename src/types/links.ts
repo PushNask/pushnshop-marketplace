@@ -1,6 +1,15 @@
-import { Database } from '@/integrations/supabase/types';
-
-export type Link = Database['public']['Tables']['permanent_links']['Row'] & {
+export interface Link {
+  id: string;
+  path: string;
+  product_id: string | null;
+  status: 'available' | 'active';
+  performance_score: number;
+  views_count: number;
+  whatsapp_clicks: number;
+  rotation_count: number;
+  last_assigned: string | null;
+  created_at: string;
+  updated_at: string;
   product?: {
     title: string;
     price: number;
@@ -8,19 +17,19 @@ export type Link = Database['public']['Tables']['permanent_links']['Row'] & {
     description: string;
     seller: {
       name: string;
-      whatsapp: string;
+      whatsapp_number: string;
     };
   };
-};
+}
 
 export interface LinkMetrics {
   activeLinks: number;
   availableLinks: number;
   averagePerformance: number;
   todayViews: number;
-  activeTrend: number;
-  performanceTrend: number;
-  viewsTrend: number;
+  activeTrend?: number;
+  performanceTrend?: number;
+  viewsTrend?: number;
 }
 
 export interface LinkFilters {

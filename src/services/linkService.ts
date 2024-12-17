@@ -1,8 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Link, LinkMetrics } from '@/types/links';
+import { Link, LinkFilters, LinkMetrics } from '@/types/links';
 
 export const linkService = {
-  async getLinks(filters: LinkFilters) {
+  async getLinks(filters: LinkFilters): Promise<Link[]> {
     let query = supabase
       .from('permanent_links')
       .select(`
@@ -47,7 +47,7 @@ export const linkService = {
 
     const { data, error } = await query;
     if (error) throw error;
-    return data as Link[];
+    return data as unknown as Link[];
   },
 
   async getMetrics(): Promise<LinkMetrics> {
