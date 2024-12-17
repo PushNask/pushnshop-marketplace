@@ -25,7 +25,9 @@ export const linkService = {
     }
 
     if (filters.search) {
-      query = query.or(`path.ilike.%${filters.search}%,title.ilike.%${filters.search}%`);
+      query = query.or(
+        `path.ilike.%${filters.search}%,product.products.title.ilike.%${filters.search}%`
+      );
     }
 
     if (filters.dateRange) {
