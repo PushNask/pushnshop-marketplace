@@ -54,8 +54,22 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: () => <ChevronLeft className="h-4 w-4" />,
-        IconRight: () => <ChevronRight className="h-4 w-4" />
+        NavigationButton: (props) => {
+          const { dir, onClick } = props;
+          return (
+            <button onClick={onClick} className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+              dir === "previous" ? "absolute left-1" : "absolute right-1"
+            )}>
+              {dir === "previous" ? (
+                <ChevronLeft className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </button>
+          );
+        }
       }}
       {...props}
     />
