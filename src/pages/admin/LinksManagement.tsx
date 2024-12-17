@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
   Link as LinkIcon, 
-  Copy, 
   BarChart, 
   Clock, 
   Eye,
-  Share2,
   Search
 } from 'lucide-react';
 import {
@@ -31,13 +29,12 @@ import {
   SelectContent,
   SelectItem
 } from '@/components/ui/select';
-import { toast } from '@/components/ui/use-toast';
 import { MetricCard } from '@/components/links/MetricCard';
 import { LinkCard } from '@/components/links/LinkCard';
 import { LinkPerformanceChart } from '@/components/links/LinkPerformanceChart';
 import { LinkAnalyticsDashboard } from '@/components/links/LinkAnalyticsDashboard';
-import { linkService } from '@/services/linkService';
 import { Link, LinkFilters } from '@/types/links';
+import { linkService } from '@/services/linkService';
 
 export default function LinksManagement() {
   const [selectedLink, setSelectedLink] = useState<Link | null>(null);
@@ -48,31 +45,15 @@ export default function LinksManagement() {
     search: ''
   });
 
-  const { data: metrics, isLoading: metricsLoading } = useQuery({
+  const { data: metrics } = useQuery({
     queryKey: ['link-metrics'],
     queryFn: linkService.getMetrics
   });
 
-  const { data: links, isLoading: linksLoading } = useQuery({
+  const { data: links } = useQuery({
     queryKey: ['links', filters],
     queryFn: () => linkService.getLinks(filters)
   });
-
-  const copyLink = async (path: string) => {
-    try {
-      await navigator.clipboard.writeText(`${window.location.origin}/${path}`);
-      toast({
-        title: "Link copied",
-        description: "The link has been copied to your clipboard."
-      });
-    } catch (error) {
-      toast({
-        title: "Failed to copy",
-        description: "Please try copying the link manually.",
-        variant: "destructive"
-      });
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -88,24 +69,24 @@ export default function LinksManagement() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
               title="Active Links"
-              value={metrics?.activeLinks ?? 0}
+              value={metrics?.activeLinks}
               icon={<LinkIcon />}
               trend={metrics?.activeTrend}
             />
             <MetricCard
               title="Available Links"
-              value={metrics?.availableLinks ?? 0}
+              value={metrics?.availableLinks}
               icon={<Clock />}
             />
             <MetricCard
               title="Average Performance"
-              value={`${(metrics?.averagePerformance ?? 0).toFixed(1)}%`}
+              value={`${metrics?.averagePerformance}%`}
               icon={<BarChart />}
               trend={metrics?.performanceTrend}
             />
             <MetricCard
               title="Total Views Today"
-              value={metrics?.todayViews ?? 0}
+              value={metrics?.todayViews}
               icon={<Eye />}
               trend={metrics?.viewsTrend}
             />
@@ -166,22 +147,16 @@ export default function LinksManagement() {
           </div>
 
           {/* Links Grid */}
-          {linksLoading ? (
-            <div className="text-center py-8 text-gray-500">
-              Loading links...
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {links?.map((link, i) => (
-                <LinkCard
-                  key={link.id}
-                  linkNumber={i + 1}
-                  link={link}
-                  onView={setSelectedLink}
-                />
-              ))}
-            </div>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {links?.map((link, i) => (
+              <LinkCard
+                key={link.id}
+                linkNumber={i + 1}
+                link={link}
+                onView={setSelectedLink}
+              />
+            ))}
+          </div>
         </CardContent>
       </Card>
 
@@ -229,7 +204,7 @@ export default function LinksManagement() {
               <div className="space-y-4">
                 <h3 className="font-semibold">Current Product</h3>
                 <img
-                  src={selectedLink.product.images[0] || "/api/placeholder/400/300"}
+                  src={selectedLink.product.images[0] || "/placeholder.svg"}
                   alt=""
                   className="w-full rounded-lg"
                 />
@@ -253,20 +228,6 @@ export default function LinksManagement() {
                     <label className="text-sm text-gray-500">Seller</label>
                     <p className="font-medium">{selectedLink.product.seller.name}</p>
                   </div>
-                </div>
-                <div className="flex gap-2 mt-4">
-                  <Button 
-                    onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}/${selectedLink.path}`);
-                    }}
-                  >
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copy Link
-                  </Button>
-                  <Button variant="outline">
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share
-                  </Button>
                 </div>
               </div>
             )}

@@ -1,15 +1,14 @@
 export interface Link {
-  id: string;
+  id: number;
   path: string;
-  product_id: string | null;
+  product_id: string;
   status: 'available' | 'active';
   performance_score: number;
   views_count: number;
   whatsapp_clicks: number;
+  facebook_shares: number;
   rotation_count: number;
-  last_assigned: string | null;
-  created_at: string;
-  updated_at: string;
+  last_assigned: string;
   product?: {
     title: string;
     price: number;
@@ -17,7 +16,7 @@ export interface Link {
     description: string;
     seller: {
       name: string;
-      whatsapp_number: string;
+      whatsapp: string;
     };
   };
 }
