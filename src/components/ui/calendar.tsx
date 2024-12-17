@@ -54,7 +54,7 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        nav: ({ ...props }) => (
+        Nav: ({ ...props }) => (
           <div className="space-x-1 flex items-center">
             <button {...props} className="h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100">
               <ChevronLeft className="h-4 w-4" />
