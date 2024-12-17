@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Outlet } from "react-router-dom";
-import { X, ShoppingBag, BarChart, User } from "lucide-react";
+import { X, ShoppingBag, BarChart, User, Plus } from "lucide-react";
 import { SellerHeader } from "@/components/seller/SellerHeader";
 import { MetricsOverview } from "@/components/seller/MetricsOverview";
 import { SidebarLink } from "@/components/seller/SidebarLink";
