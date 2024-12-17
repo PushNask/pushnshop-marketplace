@@ -28,17 +28,19 @@ export default function LinksManagement() {
     queryFn: () => linkService.getLinks(filters),
     meta: {
       errorMessage: "There was a problem loading the links. Please try again."
-    },
-    onSettled: (data, error) => {
-      if (error) {
-        toast({
-          title: "Error loading links",
-          description: "There was a problem loading the links. Please try again.",
-          variant: "destructive"
-        });
-      }
     }
   });
+
+  // Handle error state with toast
+  React.useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error loading links",
+        description: "There was a problem loading the links. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [error]);
 
   if (error) {
     return (
