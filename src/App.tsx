@@ -10,6 +10,8 @@ import Login from "./pages/auth/Login";
 import SellerDashboard from "./pages/seller/Dashboard";
 import AdminDashboard from "./pages/admin/Dashboard";
 import NewListing from "./pages/seller/NewListing";
+import LinksManagement from "./pages/admin/LinksManagement";
+import ProductManagement from "./pages/admin/ProductManagement";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +28,10 @@ const App = () => (
               <Route path="/seller/*" element={<SellerDashboard />}>
                 <Route path="products/new" element={<NewListing />} />
               </Route>
-              <Route path="/admin/*" element={<AdminDashboard />} />
+              <Route path="/admin/*" element={<AdminDashboard />}>
+                <Route path="links" element={<LinksManagement />} />
+                <Route path="products" element={<ProductManagement />} />
+              </Route>
               <Route path="/" element={<Index />} />
             </Routes>
           </BrowserRouter>
