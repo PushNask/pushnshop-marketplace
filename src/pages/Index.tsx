@@ -2,15 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Header } from "@/components/home/Header";
-import { HeroSection } from "@/components/home/HeroSection";
 import { SafetyBanner } from "@/components/SafetyBanner";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { OtherListings } from "@/components/home/OtherListings";
 import { Categories } from "@/components/home/Categories";
+import { useLanguage } from "@/hooks/useLanguage";
 
-// Temporary mock data and functions until backend is integrated
-const useLanguage = () => ({ language: "en", toggleLanguage: () => {} });
+// Temporary mock functions until backend is integrated
 const useCategories = () => ({ data: [], isLoading: false });
 const linkService = { getActivePermanentLinks: async () => [] };
 const formatCurrency = (price: number, currency: string) => `${currency} ${price}`;
@@ -18,7 +16,7 @@ const formatCurrency = (price: number, currency: string) => `${currency} ${price
 export default function Index() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const { language, toggleLanguage } = useLanguage();
+  const { language } = useLanguage();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: activeProducts, isLoading: loadingProducts } = useQuery({
     queryKey: ["active-products"],
@@ -53,9 +51,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header language={language} toggleLanguage={toggleLanguage} />
       <SafetyBanner />
-      <HeroSection language={language} />
       
       <FeaturedProducts
         products={top12Featured}
