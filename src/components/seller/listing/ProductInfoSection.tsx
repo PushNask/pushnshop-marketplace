@@ -24,8 +24,23 @@ interface ProductInfoSectionProps {
   form: UseFormReturn<ProductFormValues>;
 }
 
+const DURATION_OPTIONS = [
+  { hours: 24, price: 5000 },
+  { hours: 48, price: 7500 },
+  { hours: 72, price: 10000 },
+  { hours: 96, price: 12500 },
+  { hours: 120, price: 15000 }
+] as const;
+
 export function ProductInfoSection({ form }: ProductInfoSectionProps) {
   const { language } = useLanguage();
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('fr-CM', {
+      style: 'currency',
+      currency: 'XAF'
+    }).format(price);
+  };
 
   return (
     <div className="space-y-4">
@@ -114,6 +129,42 @@ export function ProductInfoSection({ form }: ProductInfoSectionProps) {
           )}
         />
       </div>
+
+      {/* Duration Selection */}
+      <FormField
+        control={form.control}
+        name="duration_hours"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>
+              {language === 'en' ? 'Duration & Price' : 'Durée & Prix'}
+            </FormLabel>
+            <Select
+              value={field.value?.toString()}
+              onValueChange={(value) => field.onChange(Number(value))}
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder={language === 'en' ? 'Select duration' : 'Sélectionner la durée'} />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {DURATION_OPTIONS.map(({ hours, price }) => (
+                  <SelectItem key={hours} value={hours.toString()}>
+                    {hours}h - {formatPrice(price)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormDescription>
+              {language === 'en' 
+                ? 'Select how long your listing will be active'
+                : 'Sélectionnez la durée de votre annonce'}
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }
