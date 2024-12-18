@@ -34,13 +34,16 @@ export function LinksList({ filters }: LinksListProps) {
     hasNextPage,
     isFetchingNextPage,
     status
-  } = useInfiniteQuery<PageData>({
+  } = useInfiniteQuery<PageData, Error>({
     queryKey: ['links', filters],
-    queryFn: ({ pageParam }) => linkService.getLinks({ 
-      ...filters, 
-      page: pageParam,
-      perPage: 20 
-    }),
+    queryFn: async ({ pageParam }) => {
+      const result = await linkService.getLinks({ 
+        ...filters, 
+        page: pageParam as number,
+        perPage: 20 
+      });
+      return result;
+    },
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.currentPage < lastPage.totalPages 
@@ -55,12 +58,16 @@ export function LinksList({ filters }: LinksListProps) {
     }
   }, [inView, fetchNextPage, hasNextPage]);
 
-  if (status === 'loading') {
+  if (status === 'pending') {
     return <LoadingState />;
   }
 
-  if (status === 'error') {
+  if (status === 'error' && error) {
     return <ErrorState error={error} />;
+  }
+
+  if (!data?.pages) {
+    return null;
   }
 
   return (

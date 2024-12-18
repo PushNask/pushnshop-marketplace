@@ -40,11 +40,3 @@ export interface LinkFilters {
   page: number;
   perPage: number;
 }
-
-export interface LinkAnalytics {
-  date: string;
-  views: number;
-  whatsapp_clicks: number;
-  avg_time_on_page: number;
-  performance_score: number;
-}
