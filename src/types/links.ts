@@ -1,23 +1,24 @@
 import { DateRange } from "react-day-picker";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface Link {
   id: string;
   path: string;
   product_id: string | null;
-  status: 'available' | 'active' | 'pending' | 'expired';  // Updated to match all possible statuses
-  performance_score: number;
-  views_count: number;
-  whatsapp_clicks: number;
-  rotation_count: number;
+  status: 'available' | 'active' | 'pending' | 'expired';
+  performance_score: number | null;
+  views_count: number | null;
+  whatsapp_clicks: number | null;
+  rotation_count: number | null;
   last_assigned: string | null;
-  meta_title?: string;
-  meta_description?: string;
-  seo_data?: Record<string, any>;
+  meta_title: string | null;
+  meta_description: string | null;
+  seo_data: Json | null;
   created_at: string;
   updated_at: string;
   expires_at: string | null;
-  facebook_shares: number;
-  historical_performance: any[];
+  facebook_shares: number | null;
+  historical_performance: Json | null;
   product?: {
     id: string;
     title: string;
