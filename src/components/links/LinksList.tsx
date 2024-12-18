@@ -6,15 +6,10 @@ import { Button } from '@/components/ui/button';
 import { linkService } from '@/services/linkService';
 import { LinkCard } from './LinkCard';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import type { Link, PageData } from '@/types/links';
+import type { Link, PageData, LinkFilters } from '@/types/links';
 
 interface LinksListProps {
-  filters: {
-    status?: string;
-    search?: string;
-    sortBy?: string;
-    sortDirection?: 'asc' | 'desc';
-  };
+  filters: Partial<LinkFilters>;
 }
 
 export function LinksList({ filters }: LinksListProps) {
@@ -29,13 +24,17 @@ export function LinksList({ filters }: LinksListProps) {
     status
   } = useInfiniteQuery<PageData, Error>({
     queryKey: ['links', filters],
-    queryFn: async ({ pageParam }) => {
-      const result = await linkService.getLinks({ 
-        ...filters, 
-        page: pageParam as number,
-        perPage: 20 
-      });
-      return result;
+    queryFn: async ({ pageParam = 1 }) => {
+      const fullFilters: LinkFilters = {
+        status: filters.status || 'all',
+        sortBy: filters.sortBy || 'performance',
+        search: filters.search || '',
+        dateRange: filters.dateRange || null,
+        page: pageParam,
+        perPage: 20,
+        sortDirection: filters.sortDirection
+      };
+      return linkService.getLinks(fullFilters);
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>

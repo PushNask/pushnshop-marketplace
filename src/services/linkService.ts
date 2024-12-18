@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Link, LinkFilters, PageData } from '@/types/links';
 
 export const linkService = {
-  async getLinks({ page, perPage, status, search, sortBy = 'created_at', sortDirection = 'desc' }: LinkFilters): Promise<PageData> {
+  async getLinks({ page, perPage, status, search, sortBy = 'performance', sortDirection = 'desc', dateRange }: LinkFilters): Promise<PageData> {
     try {
       const from = (page - 1) * perPage;
       const to = from + perPage - 1;
@@ -32,13 +32,21 @@ export const linkService = {
         query = query.or(`path.ilike.%${search}%,product->title.ilike.%${search}%`);
       }
 
+      if (dateRange?.from) {
+        query = query.gte('created_at', dateRange.from.toISOString());
+      }
+      
+      if (dateRange?.to) {
+        query = query.lte('created_at', dateRange.to.toISOString());
+      }
+
       // Map sortBy values to actual column names
       const sortColumn = {
         performance: 'performance_score',
         views: 'views_count',
         clicks: 'whatsapp_clicks',
         rotations: 'rotation_count'
-      }[sortBy] || 'created_at';
+      }[sortBy] || 'performance_score';
 
       query = query.order(sortColumn, { ascending: sortDirection === 'asc' });
       query = query.range(from, to);

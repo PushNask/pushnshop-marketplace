@@ -39,6 +39,7 @@ export interface LinkFilters {
   dateRange: DateRange | null;
   page: number;
   perPage: number;
+  sortDirection?: 'asc' | 'desc';
 }
 
 export interface PageData {
