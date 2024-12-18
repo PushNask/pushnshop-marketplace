@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { linkService } from '@/services/linkService';
 import { LinkCard } from './LinkCard';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import type { Link } from '@/types/links';
+import type { Link, PageData } from '@/types/links';
 
 interface LinksListProps {
   filters: {
@@ -15,13 +15,6 @@ interface LinksListProps {
     sortBy?: string;
     sortDirection?: 'asc' | 'desc';
   };
-}
-
-interface PageData {
-  links: Link[];
-  totalCount: number;
-  currentPage: number;
-  totalPages: number;
 }
 
 export function LinksList({ filters }: LinksListProps) {

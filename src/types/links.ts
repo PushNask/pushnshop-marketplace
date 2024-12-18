@@ -40,3 +40,10 @@ export interface LinkFilters {
   page: number;
   perPage: number;
 }
+
+export interface PageData {
+  links: Link[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+}

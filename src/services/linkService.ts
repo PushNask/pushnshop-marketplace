@@ -1,16 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
-
-export interface LinkFilters {
-  page: number;
-  perPage: number;
-  status?: string;
-  search?: string;
-  sortBy?: string;
-  sortDirection?: 'asc' | 'desc';
-}
+import type { Link, LinkFilters, PageData } from '@/types/links';
 
 export const linkService = {
-  async getLinks({ page, perPage, status, search, sortBy = 'created_at', sortDirection = 'desc' }: LinkFilters) {
+  async getLinks({ page, perPage, status, search, sortBy = 'created_at', sortDirection = 'desc' }: LinkFilters): Promise<PageData> {
     try {
       const from = (page - 1) * perPage;
       const to = from + perPage - 1;
@@ -40,7 +32,15 @@ export const linkService = {
         query = query.or(`path.ilike.%${search}%,product->title.ilike.%${search}%`);
       }
 
-      query = query.order(sortBy, { ascending: sortDirection === 'asc' });
+      // Map sortBy values to actual column names
+      const sortColumn = {
+        performance: 'performance_score',
+        views: 'views_count',
+        clicks: 'whatsapp_clicks',
+        rotations: 'rotation_count'
+      }[sortBy] || 'created_at';
+
+      query = query.order(sortColumn, { ascending: sortDirection === 'asc' });
       query = query.range(from, to);
 
       const { data, error, count } = await query;
@@ -48,7 +48,7 @@ export const linkService = {
       if (error) throw error;
 
       return {
-        links: data || [],
+        links: data as Link[],
         totalCount: count || 0,
         currentPage: page,
         totalPages: Math.ceil((count || 0) / perPage)
@@ -80,6 +80,6 @@ export const linkService = {
       .order('performance_score', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return data as Link[] || [];
   }
 };
