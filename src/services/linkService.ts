@@ -11,13 +11,13 @@ export const linkService = {
         .from('permanent_links')
         .select(`
           *,
-          product:products (
+          products!permanent_links_product_id_fkey (
             id,
             title,
             price,
             images,
             description,
-            seller:profiles (
+            profiles!products_seller_id_fkey (
               name,
               whatsapp_number
             )
@@ -29,7 +29,7 @@ export const linkService = {
       }
 
       if (search) {
-        query = query.or(`path.ilike.%${search}%,product->title.ilike.%${search}%`);
+        query = query.or(`path.ilike.%${search}%,products.title.ilike.%${search}%`);
       }
 
       if (dateRange?.from) {
@@ -72,13 +72,13 @@ export const linkService = {
       .from('permanent_links')
       .select(`
         *,
-        product:products (
+        products!permanent_links_product_id_fkey (
           id,
           title,
           price,
           images,
           description,
-          seller:profiles (
+          profiles!products_seller_id_fkey (
             name,
             whatsapp_number
           )
