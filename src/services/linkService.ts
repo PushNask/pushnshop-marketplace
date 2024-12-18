@@ -4,6 +4,7 @@ import type { Link, LinkFilters, PageData } from '@/types/links';
 export const linkService = {
   async getLinks({ page, perPage, status, search, sortBy = 'performance', sortDirection = 'desc', dateRange }: LinkFilters): Promise<PageData> {
     try {
+      // Calculate the range for pagination
       const from = (page - 1) * perPage;
       const to = from + perPage - 1;
 
@@ -24,12 +25,16 @@ export const linkService = {
           )
         `, { count: 'exact' });
 
+      // Apply filters
       if (status && status !== 'all') {
         query = query.eq('status', status);
       }
 
+      // Handle search using separate ilike conditions
       if (search) {
-        query = query.or(`path.ilike.%${search}%,products.title.ilike.%${search}%`);
+        query = query.or(
+          `path.ilike.%${search}%,products!permanent_links_product_id_fkey(title.ilike.%${search}%)`
+        );
       }
 
       if (dateRange?.from) {
@@ -40,7 +45,7 @@ export const linkService = {
         query = query.lte('created_at', dateRange.to.toISOString());
       }
 
-      // Map sortBy values to actual column names
+      // Apply sorting
       const sortColumn = {
         performance: 'performance_score',
         views: 'views_count',
@@ -49,6 +54,8 @@ export const linkService = {
       }[sortBy] || 'performance_score';
 
       query = query.order(sortColumn, { ascending: sortDirection === 'asc' });
+
+      // Apply pagination
       query = query.range(from, to);
 
       const { data, error, count } = await query;
