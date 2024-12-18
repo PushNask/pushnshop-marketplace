@@ -39,12 +39,12 @@ export interface LinkFilters {
   dateRange: DateRange | null;
   page: number;
   perPage: number;
+  sortDirection?: 'asc' | 'desc';
 }
 
-export interface LinkAnalytics {
-  date: string;
-  views: number;
-  whatsapp_clicks: number;
-  avg_time_on_page: number;
-  performance_score: number;
+export interface PageData {
+  links: Link[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
 }
