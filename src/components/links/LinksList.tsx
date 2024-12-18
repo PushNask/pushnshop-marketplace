@@ -24,13 +24,13 @@ export function LinksList({ filters }: LinksListProps) {
     status
   } = useInfiniteQuery<PageData, Error>({
     queryKey: ['links', filters],
-    queryFn: async ({ pageParam = 1 }) => {
+    queryFn: async ({ pageParam }) => {
       const fullFilters: LinkFilters = {
         status: filters.status || 'all',
         sortBy: filters.sortBy || 'performance',
         search: filters.search || '',
         dateRange: filters.dateRange || null,
-        page: pageParam,
+        page: pageParam as number,
         perPage: 20,
         sortDirection: filters.sortDirection
       };
