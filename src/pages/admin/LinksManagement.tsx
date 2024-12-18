@@ -100,9 +100,19 @@ export default function LinksManagement() {
     }
   });
 
+  const defaultMetrics = {
+    activeLinks: 0,
+    availableLinks: 0,
+    averagePerformance: 0,
+    todayViews: 0,
+    activeTrend: 0,
+    performanceTrend: 0,
+    viewsTrend: 0
+  };
+
   return (
     <div className="space-y-6">
-      <LinksOverview metrics={metrics || { activeLinks: 0, availableLinks: 0, averagePerformance: 0, todayViews: 0, activeTrend: 0, performanceTrend: 0, viewsTrend: 0 }} />
+      <LinksOverview metrics={metrics || defaultMetrics} />
 
       <Card>
         <CardHeader>
