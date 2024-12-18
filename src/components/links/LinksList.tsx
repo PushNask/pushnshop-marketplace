@@ -1,79 +1,120 @@
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useEffect } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInView } from 'react-intersection-observer';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Eye, Settings } from 'lucide-react';
+import { linkService } from '@/services/linkService';
+import { LinkCard } from './LinkCard';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import type { Link } from '@/types/links';
 
 interface LinksListProps {
-  links: Link[];
-  onView: (link: Link) => void;
-  onAssign?: () => void;
-  onUpdateSEO?: () => void;
+  filters: {
+    status?: string;
+    search?: string;
+    sortBy?: string;
+    sortDirection?: 'asc' | 'desc';
+  };
 }
 
-export function LinksList({ links, onView, onAssign, onUpdateSEO }: LinksListProps) {
+export function LinksList({ filters }: LinksListProps) {
+  const { ref, inView } = useInView();
+
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status
+  } = useInfiniteQuery({
+    queryKey: ['links', filters],
+    queryFn: ({ pageParam = 1 }) => linkService.getLinks({ 
+      ...filters, 
+      page: pageParam,
+      perPage: 20 
+    }),
+    getNextPageParam: (lastPage) =>
+      lastPage.currentPage < lastPage.totalPages 
+        ? lastPage.currentPage + 1 
+        : undefined,
+    retry: 2
+  });
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage]);
+
+  if (status === 'loading') {
+    return <LoadingState />;
+  }
+
+  if (status === 'error') {
+    return <ErrorState error={error as Error} />;
+  }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {links.map((link, index) => (
-        <Card key={link.id || index}>
-          <CardContent className="p-4">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="font-medium">{link.path}</h3>
-                <p className="text-sm text-gray-500">
-                  {link.status === 'active' ? 'Active' : 'Available'}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={() => onView(link)}>
-                  <Eye className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={onUpdateSEO}>
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {data.pages.map((page) =>
+          page.links.map((link: Link) => (
+            <LinkCard 
+              key={link.id} 
+              link={link}
+              onView={() => {}}
+              onAssign={() => {}}
+              onUpdateSEO={() => {}}
+            />
+          ))
+        )}
+      </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Performance</span>
-                <span className="font-medium">{link.performance_score}%</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Views</span>
-                <span className="font-medium">{link.views_count}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Clicks</span>
-                <span className="font-medium">{link.whatsapp_clicks}</span>
-              </div>
-            </div>
-
-            {link.product && (
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex items-center gap-3">
-                  <img
-                    src={link.product.images[0] || "/placeholder.svg"}
-                    alt=""
-                    className="w-10 h-10 rounded object-cover"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {link.product.title}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Intl.NumberFormat('fr-CM', {
-                        style: 'currency',
-                        currency: 'XAF'
-                      }).format(link.product.price)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      ))}
+      {hasNextPage && (
+        <div
+          ref={ref}
+          className="flex justify-center p-4"
+        >
+          {isFetchingNextPage && <LoadingSpinner />}
+        </div>
+      )}
     </div>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="flex justify-center items-center p-8">
+      <LoadingSpinner />
+    </div>
+  );
+}
+
+function LoadingSpinner() {
+  return (
+    <div className="flex items-center gap-2 text-gray-500">
+      <Loader2 className="h-5 w-5 animate-spin" />
+      <span>Loading...</span>
+    </div>
+  );
+}
+
+function ErrorState({ error }: { error: Error }) {
+  return (
+    <div className="text-center p-8">
+      <p className="text-red-500 mb-4">{error.message}</p>
+      <Button onClick={() => window.location.reload()}>
+        Try Again
+      </Button>
+    </div>
+  );
+}
+
+export function LinksListWithErrorBoundary(props: LinksListProps) {
+  return (
+    <ErrorBoundary>
+      <LinksList {...props} />
+    </ErrorBoundary>
   );
 }

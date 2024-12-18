@@ -1,9 +1,20 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { Link, LinkFilters } from '@/types/links';
+
+export interface LinkFilters {
+  page: number;
+  perPage: number;
+  status?: string;
+  search?: string;
+  sortBy?: string;
+  sortDirection?: 'asc' | 'desc';
+}
 
 export const linkService = {
-  async getLinks(filters: LinkFilters) {
+  async getLinks({ page, perPage, status, search, sortBy = 'created_at', sortDirection = 'desc' }: LinkFilters) {
     try {
+      const from = (page - 1) * perPage;
+      const to = from + perPage - 1;
+
       let query = supabase
         .from('permanent_links')
         .select(`
@@ -21,60 +32,54 @@ export const linkService = {
           )
         `, { count: 'exact' });
 
-      // Apply status filter
-      if (filters.status !== 'all') {
-        query = query.eq('status', filters.status);
+      if (status && status !== 'all') {
+        query = query.eq('status', status);
       }
 
-      // Apply search filter - using textSearch for better performance
-      if (filters.search) {
-        query = query.textSearch('path', filters.search);
+      if (search) {
+        query = query.or(`path.ilike.%${search}%,product->title.ilike.%${search}%`);
       }
 
-      // Apply date range filter if present
-      if (filters.dateRange?.from && filters.dateRange?.to) {
-        query = query
-          .gte('created_at', filters.dateRange.from.toISOString())
-          .lte('created_at', filters.dateRange.to.toISOString());
-      }
+      query = query.order(sortBy, { ascending: sortDirection === 'asc' });
+      query = query.range(from, to);
 
-      // Apply sorting
-      const sortMapping = {
-        performance: 'performance_score',
-        views: 'views_count',
-        clicks: 'whatsapp_clicks',
-        rotations: 'rotation_count'
-      };
+      const { data, error, count } = await query;
 
-      query = query.order(sortMapping[filters.sortBy], { ascending: false });
-
-      // Execute query with pagination
-      const { data, error, count } = await query
-        .range((filters.page - 1) * filters.perPage, filters.page * filters.perPage - 1);
-
-      if (error) {
-        console.error('Error fetching links:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       return {
-        links: data as Link[],
-        totalCount: count || 0
+        links: data || [],
+        totalCount: count || 0,
+        currentPage: page,
+        totalPages: Math.ceil((count || 0) / perPage)
       };
     } catch (error) {
-      console.error('Error in getLinks:', error);
+      console.error('Error fetching links:', error);
       throw error;
     }
   },
 
-  async updateLink(id: string, updates: Partial<Link>) {
+  async getActivePermanentLinks() {
     const { data, error } = await supabase
       .from('permanent_links')
-      .update(updates)
-      .eq('id', id)
-      .single();
+      .select(`
+        *,
+        product:products (
+          id,
+          title,
+          price,
+          images,
+          description,
+          seller:profiles (
+            name,
+            whatsapp_number
+          )
+        )
+      `)
+      .eq('status', 'active')
+      .order('performance_score', { ascending: false });
 
     if (error) throw error;
-    return data;
+    return data || [];
   }
 };
