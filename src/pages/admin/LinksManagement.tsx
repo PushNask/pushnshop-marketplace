@@ -1,31 +1,22 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { 
-  Link as LinkIcon, 
-  Search, 
-  Filter,
-  ArrowUpDown,
-  Eye
-} from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { LinksList } from "@/components/links/LinksList";
-import { MetricCard } from "@/components/links/MetricCard";
-import { useLanguage } from "@/hooks/useLanguage";
-import { supabase } from "@/integrations/supabase/client";
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Link as LinkIcon, Search, Filter, ArrowUpDown, Eye } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LinksList } from '@/components/links/LinksList';
+import { MetricCard } from '@/components/links/MetricCard';
+import { useLanguage } from '@/hooks/useLanguage';
+import { supabase } from '@/integrations/supabase/client';
+import type { Link } from '@/types/links';
+import type { Database } from '@/integrations/supabase/types';
+
+type PermanentLink = Database['public']['Tables']['permanent_links']['Row'] & {
+  product?: Database['public']['Tables']['products']['Row'] & {
+    seller: Database['public']['Tables']['profiles']['Row'];
+  };
+};
 
 export default function LinksManagement() {
   const { language } = useLanguage();
@@ -40,27 +31,21 @@ export default function LinksManagement() {
     queryKey: ["permanent-links", filters],
     queryFn: async () => {
       let query = supabase
-        .from("permanent_links")
+        .from('permanent_links')
         .select(`
           *,
           product:products (
-            id,
-            title,
-            price,
-            images,
-            seller:profiles (
-              name,
-              whatsapp_number
-            )
+            *,
+            seller:profiles (*)
           )
         `);
 
       if (filters.status !== "all") {
-        query = query.eq("status", filters.status);
+        query = query.eq('status', filters.status);
       }
 
       if (filters.search) {
-        query = query.ilike("path", `%${filters.search}%`);
+        query = query.ilike('path', `%${filters.search}%`);
       }
 
       // Apply sorting
@@ -77,11 +62,26 @@ export default function LinksManagement() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+
+      // Transform the data to match our Link type
+      return (data as PermanentLink[]).map(link => ({
+        ...link,
+        status: link.status as Link['status'], // This ensures the status is correctly typed
+        product: link.product ? {
+          id: link.product.id,
+          title: link.product.title,
+          price: link.product.price,
+          images: link.product.images || [],
+          description: link.product.description || '',
+          seller: {
+            name: link.product.seller.name || '',
+            whatsapp_number: link.product.seller.whatsapp_number || ''
+          }
+        } : undefined
+      })) as Link[];
     }
   });
 
-  // Fetch metrics for overview cards
   const { data: metrics } = useQuery({
     queryKey: ["links-metrics"],
     queryFn: async () => {
@@ -107,7 +107,6 @@ export default function LinksManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Overview Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title={language === "en" ? "Active Links" : "Liens actifs"}
