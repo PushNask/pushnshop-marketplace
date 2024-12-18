@@ -32,7 +32,7 @@ export function LinksOverview({ metrics }: LinksOverviewProps) {
       />
       <MetricCard
         title={language === "en" ? "Average Performance" : "Performance moyenne"}
-        value={`${metrics?.averagePerformance}%`}
+        value={metrics?.averagePerformance}
         icon={<ArrowUpDown />}
         trend={metrics?.performanceTrend}
       />

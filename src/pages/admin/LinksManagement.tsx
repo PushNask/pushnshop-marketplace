@@ -85,21 +85,24 @@ export default function LinksManagement() {
 
       const active = data.filter(l => l.status === "active").length;
       const available = data.filter(l => l.status === "available").length;
-      const avgPerformance = data.reduce((acc, curr) => acc + (curr.performance_score || 0), 0) / data.length;
+      const avgPerformance = data.reduce((acc, curr) => acc + (curr.performance_score || 0), 0) / (data.length || 1);
       const totalViews = data.reduce((acc, curr) => acc + (curr.views_count || 0), 0);
 
       return {
         activeLinks: active,
         availableLinks: available,
-        averagePerformance: avgPerformance.toFixed(1),
-        todayViews: totalViews
+        averagePerformance: Number(avgPerformance.toFixed(1)),
+        todayViews: totalViews,
+        activeTrend: 0,
+        performanceTrend: 0,
+        viewsTrend: 0
       };
     }
   });
 
   return (
     <div className="space-y-6">
-      <LinksOverview metrics={metrics || { activeLinks: 0, availableLinks: 0, averagePerformance: 0, todayViews: 0 }} />
+      <LinksOverview metrics={metrics || { activeLinks: 0, availableLinks: 0, averagePerformance: 0, todayViews: 0, activeTrend: 0, performanceTrend: 0, viewsTrend: 0 }} />
 
       <Card>
         <CardHeader>
