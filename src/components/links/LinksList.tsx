@@ -17,6 +17,13 @@ interface LinksListProps {
   };
 }
 
+interface PageData {
+  links: Link[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+}
+
 export function LinksList({ filters }: LinksListProps) {
   const { ref, inView } = useInView();
 
@@ -27,13 +34,14 @@ export function LinksList({ filters }: LinksListProps) {
     hasNextPage,
     isFetchingNextPage,
     status
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<PageData>({
     queryKey: ['links', filters],
-    queryFn: ({ pageParam = 1 }) => linkService.getLinks({ 
+    queryFn: ({ pageParam }) => linkService.getLinks({ 
       ...filters, 
       page: pageParam,
       perPage: 20 
     }),
+    initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.currentPage < lastPage.totalPages 
         ? lastPage.currentPage + 1 
@@ -52,14 +60,14 @@ export function LinksList({ filters }: LinksListProps) {
   }
 
   if (status === 'error') {
-    return <ErrorState error={error as Error} />;
+    return <ErrorState error={error} />;
   }
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {data.pages.map((page) =>
-          page.links.map((link: Link) => (
+          page.links.map((link) => (
             <LinkCard 
               key={link.id} 
               link={link}
