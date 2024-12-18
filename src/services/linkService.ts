@@ -33,7 +33,7 @@ export const linkService = {
       // Handle search using separate ilike conditions
       if (search) {
         query = query.or(
-          `path.ilike.%${search}%,products!permanent_links_product_id_fkey(title.ilike.%${search}%)`
+          `path.ilike.%${search}%`
         );
       }
 
@@ -60,7 +60,10 @@ export const linkService = {
 
       const { data, error, count } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching links:', error);
+        throw error;
+      }
 
       return {
         links: data as Link[],
@@ -75,26 +78,31 @@ export const linkService = {
   },
 
   async getActivePermanentLinks() {
-    const { data, error } = await supabase
-      .from('permanent_links')
-      .select(`
-        *,
-        products!permanent_links_product_id_fkey (
-          id,
-          title,
-          price,
-          images,
-          description,
-          profiles!products_seller_id_fkey (
-            name,
-            whatsapp_number
+    try {
+      const { data, error } = await supabase
+        .from('permanent_links')
+        .select(`
+          *,
+          products!permanent_links_product_id_fkey (
+            id,
+            title,
+            price,
+            images,
+            description,
+            profiles!products_seller_id_fkey (
+              name,
+              whatsapp_number
+            )
           )
-        )
-      `)
-      .eq('status', 'active')
-      .order('performance_score', { ascending: false });
+        `)
+        .eq('status', 'active')
+        .order('performance_score', { ascending: false });
 
-    if (error) throw error;
-    return data as Link[] || [];
+      if (error) throw error;
+      return data as Link[] || [];
+    } catch (error) {
+      console.error('Error fetching active links:', error);
+      throw error;
+    }
   }
 };
