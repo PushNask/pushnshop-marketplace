@@ -2,8 +2,10 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+type UserRole = 'admin' | 'seller';
+
 interface AuthUser extends User {
-  role?: 'admin' | 'seller';
+  role?: UserRole;
 }
 
 interface AuthContextType {
@@ -31,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setUser({
           ...session.user,
-          role: profile?.role || 'seller' // Default to seller if no role found
+          role: (profile?.role as UserRole) || 'seller' // Cast to UserRole
         });
       } else {
         setUser(null);
@@ -53,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setUser({
           ...session.user,
-          role: profile?.role || 'seller' // Default to seller if no role found
+          role: (profile?.role as UserRole) || 'seller' // Cast to UserRole
         });
       } else {
         setUser(null);
