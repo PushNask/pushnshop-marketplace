@@ -9,6 +9,7 @@ import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
+import Signup from "./pages/auth/Signup";
 import SellerDashboard from "./pages/seller/Dashboard";
 import AdminDashboard from "./pages/admin/Dashboard";
 import NewListing from "./pages/seller/NewListing";
@@ -27,6 +28,7 @@ function Layout() {
       <main className="flex-1">
         <Routes>
           <Route path="/auth/login" element={<Login />} />
+          <Route path="/auth/signup" element={<Signup />} />
           <Route path="/seller/*" element={<SellerDashboard />}>
             <Route path="products/new" element={<NewListing />} />
           </Route>
