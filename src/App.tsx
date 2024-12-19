@@ -19,8 +19,14 @@ import ProductManagement from "./pages/admin/ProductManagement";
 const queryClient = new QueryClient();
 
 function RequireAuth({ children, allowedRoles }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>;
+  }
 
   if (!user) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
@@ -42,6 +48,12 @@ function RequireAuth({ children, allowedRoles }) {
 function Layout() {
   const location = useLocation();
   const isDashboard = location.pathname.includes('/admin') || location.pathname.includes('/seller');
+  const { user } = useAuth();
+
+  // If user is authenticated and on auth pages, redirect to appropriate dashboard
+  if (user && (location.pathname === '/auth/login' || location.pathname === '/auth/signup')) {
+    return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/seller/dashboard'} replace />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
