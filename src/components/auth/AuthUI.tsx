@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 interface AuthUIProps {
   view?: "sign_in" | "sign_up";
@@ -12,36 +14,54 @@ interface AuthUIProps {
 export function AuthUI({ view = "sign_in" }: AuthUIProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Set up auth state change listener
-  supabase.auth.onAuthStateChange((event, session) => {
+  supabase.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN') {
-      // Check user role and redirect accordingly
-      if (session?.user) {
-        supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: profile, error }) => {
-            if (!error && profile) {
-              const redirectPath = profile.role === 'admin' 
-                ? '/admin/dashboard' 
-                : '/seller/dashboard';
-              navigate(redirectPath, { replace: true });
-            } else {
-              toast({
-                title: "Error",
-                description: "Could not fetch user profile",
-                variant: "destructive",
-              });
-            }
-          });
+      setIsLoading(true);
+      try {
+        // Check user role and redirect accordingly
+        if (session?.user) {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+
+          if (error) {
+            throw error;
+          }
+
+          if (profile) {
+            const redirectPath = profile.role === 'admin' 
+              ? '/admin/dashboard' 
+              : '/seller/dashboard';
+            navigate(redirectPath, { replace: true });
+          }
+        }
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Could not fetch user profile",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     } else if (event === 'SIGNED_OUT') {
       navigate('/auth/login', { replace: true });
     }
   });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span className="ml-2">Authenticating...</span>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -64,22 +84,40 @@ export function AuthUI({ view = "sign_in" }: AuthUIProps) {
               },
             },
           },
+          className: {
+            button: 'bg-primary hover:bg-primary/90',
+            input: 'rounded-md border border-input',
+            label: 'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+          },
         }}
         theme="light"
         providers={[]}
         view={view}
         redirectTo={window.location.origin}
+        onError={(error) => {
+          toast({
+            title: "Authentication Error",
+            description: error.message,
+            variant: "destructive",
+          });
+        }}
         localization={{
           variables: {
             sign_up: {
               email_label: "Email address",
               password_label: "Create password",
               button_label: "Create seller account",
+              loading_button_label: "Creating account...",
+              social_provider_text: "Sign up with {{provider}}",
+              link_text: "Don't have an account? Sign up",
             },
             sign_in: {
               email_label: "Email address",
               password_label: "Your password",
               button_label: "Sign in",
+              loading_button_label: "Signing in...",
+              social_provider_text: "Sign in with {{provider}}",
+              link_text: "Already have an account? Sign in",
             },
           },
         }}
