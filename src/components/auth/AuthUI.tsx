@@ -51,6 +51,10 @@ export function AuthUI({ view = "sign_in" }: AuthUIProps) {
       }
     } else if (event === 'SIGNED_OUT') {
       navigate('/auth/login', { replace: true });
+    } else if (event === 'USER_UPDATED') {
+      // Handle user updates if needed
+    } else if (event === 'PASSWORD_RECOVERY') {
+      // Handle password recovery if needed
     }
   });
 
