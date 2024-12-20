@@ -94,13 +94,6 @@ export function AuthUI({ view = "sign_in" }: AuthUIProps) {
         providers={[]}
         view={view}
         redirectTo={window.location.origin}
-        onError={(error) => {
-          toast({
-            title: "Authentication Error",
-            description: error.message,
-            variant: "destructive",
-          });
-        }}
         localization={{
           variables: {
             sign_up: {
