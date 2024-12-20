@@ -41,6 +41,36 @@ export type Database = {
           },
         ]
       }
+      categories: {
+        Row: {
+          created_at: string | null
+          icon: string | null
+          id: string
+          name: string
+          name_fr: string | null
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          name_fr?: string | null
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          name_fr?: string | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       link_analytics_events: {
         Row: {
           created_at: string | null

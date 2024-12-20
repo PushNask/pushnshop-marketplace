@@ -6,10 +6,12 @@ export interface Category {
   name_fr?: string;
   icon?: string;
   slug: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const categoryService = {
-  async getCategories() {
+  async getCategories(): Promise<Category[]> {
     const { data, error } = await supabase
       .from('categories')
       .select('*')
@@ -19,7 +21,7 @@ export const categoryService = {
     return data || [];
   },
 
-  async getCategoryBySlug(slug: string) {
+  async getCategoryBySlug(slug: string): Promise<Category | null> {
     const { data, error } = await supabase
       .from('categories')
       .select('*')

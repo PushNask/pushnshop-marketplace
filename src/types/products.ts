@@ -27,12 +27,14 @@ export type ProductFormValues = z.infer<typeof productSchema>;
 export interface Product {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   price: number;
-  images: string[];
+  images?: string[];
   status: 'pending' | 'approved' | 'rejected' | 'active';
   seller_id: string;
   created_at: string;
   updated_at: string;
   is_verified: boolean;
+  seller_whatsapp?: string;
+  currency?: string;
 }

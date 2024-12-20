@@ -4,16 +4,18 @@ import { supabase } from '@/integrations/supabase/client';
 export function useAnalytics() {
   const trackEvent = useCallback(async (
     eventType: string,
+    productId: string,
     metadata: Record<string, any> = {}
   ) => {
     try {
       const { error } = await supabase
         .from('analytics_events')
-        .insert([{
+        .insert({
           event_type: eventType,
+          product_id: productId,
           metadata,
           created_at: new Date().toISOString()
-        }]);
+        });
 
       if (error) throw error;
     } catch (err) {
@@ -22,15 +24,15 @@ export function useAnalytics() {
   }, []);
 
   const trackProductView = useCallback((productId: string) => {
-    return trackEvent('product_view', { product_id: productId });
+    return trackEvent('product_view', productId);
   }, [trackEvent]);
 
   const trackWhatsAppClick = useCallback((productId: string) => {
-    return trackEvent('whatsapp_click', { product_id: productId });
+    return trackEvent('whatsapp_click', productId);
   }, [trackEvent]);
 
   const trackLinkView = useCallback((linkId: string) => {
-    return trackEvent('link_view', { link_id: linkId });
+    return trackEvent('link_view', linkId);
   }, [trackEvent]);
 
   return {
