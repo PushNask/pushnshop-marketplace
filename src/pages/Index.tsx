@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useCategories } from '@/hooks/useCategories';
 import { useActivePermanentLinks } from '@/hooks/useActivePermanentLinks';
 import { SafetyBanner } from '@/components/SafetyBanner';
 import { FeaturedProducts } from '@/components/home/FeaturedProducts';
@@ -17,6 +18,7 @@ const formatCurrency = (price: number, currency: string = 'XAF') => {
 
 export default function Index() {
   const { language } = useLanguage();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { 
     data: productsData, 
     isLoading: productsLoading 
@@ -55,9 +57,9 @@ export default function Index() {
         />
 
         <Categories
-          categories={[]}
+          categories={categories || []}
           language={language}
-          isLoading={false}
+          isLoading={categoriesLoading}
         />
       </div>
     </ErrorBoundary>

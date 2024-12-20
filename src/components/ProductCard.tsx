@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { MessageCircle, Shield } from "lucide-react";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 interface Product {
+  id: string;
   title: string;
   price: number;
   currency?: string;
@@ -25,13 +27,30 @@ export function ProductCard({
   formatCurrency,
   linkNumber,
 }: ProductCardProps) {
+  const { trackProductView, trackWhatsAppClick } = useAnalytics();
   const price = formatCurrency(product.price, product.currency || "XAF");
   const productLink = `/p${linkNumber}`;
   const detailsLink = `/p${linkNumber}/details`;
 
+  const handleWhatsAppClick = () => {
+    if (product.id) {
+      trackWhatsAppClick(product.id);
+    }
+  };
+
+  const handleProductClick = () => {
+    if (product.id) {
+      trackProductView(product.id);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-      <Link to={productLink} className="block aspect-square bg-gray-100 relative">
+      <Link 
+        to={productLink} 
+        className="block aspect-square bg-gray-100 relative"
+        onClick={handleProductClick}
+      >
         {product.images?.[0] ? (
           <img
             src={product.images[0]}
@@ -58,22 +77,20 @@ export function ProductCard({
       <div className="p-4">
         <h3 className="font-medium mb-2 truncate">{product.title}</h3>
         <p className="text-sm text-gray-600 mb-2 truncate">
-          {product.description ||
-            (language === "en" ? "No description" : "Pas de description")}
+          {product.description || (language === "en" ? "No description" : "Pas de description")}
         </p>
         <div className="flex justify-between items-center mb-2">
           <span className="font-bold text-[#002C5F]">{price}</span>
           {product.seller_whatsapp ? (
             <a
-              href={`https://wa.me/${
-                product.seller_whatsapp
-              }?text=${encodeURIComponent(
+              href={`https://wa.me/${product.seller_whatsapp}?text=${encodeURIComponent(
                 `Hello, I'm interested in: ${product.title}`
               )}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#F7941D] hover:text-[#005BBB] transition-colors"
               aria-label="Contact seller on WhatsApp"
+              onClick={handleWhatsAppClick}
             >
               <MessageCircle className="h-5 w-5" />
             </a>
@@ -87,6 +104,7 @@ export function ProductCard({
         <Link
           to={detailsLink}
           className="text-sm text-[#005BBB] underline hover:no-underline"
+          onClick={handleProductClick}
         >
           {language === "en" ? "View Details" : "Voir les détails"}
         </Link>
