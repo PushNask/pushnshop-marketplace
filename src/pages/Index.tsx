@@ -1,13 +1,11 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useCategories } from '@/hooks/useCategories';
 import { useActivePermanentLinks } from '@/hooks/useActivePermanentLinks';
 import { SafetyBanner } from '@/components/SafetyBanner';
 import { FeaturedProducts } from '@/components/home/FeaturedProducts';
 import { OtherListings } from '@/components/home/OtherListings';
 import { Categories } from '@/components/home/Categories';
+import { HeroSection } from '@/components/home/HeroSection';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const formatCurrency = (price: number, currency: string = 'XAF') => {
@@ -18,25 +16,11 @@ const formatCurrency = (price: number, currency: string = 'XAF') => {
 };
 
 export default function Index() {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
   const { language } = useLanguage();
-  const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { 
     data: productsData, 
     isLoading: productsLoading 
   } = useActivePermanentLinks();
-
-  // Redirect to login if not authenticated
-  React.useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth/login');
-    }
-  }, [user, loading, navigate]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   const MAX_CAPACITY = 120;
   const FEATURED_COUNT = 12;
@@ -52,6 +36,8 @@ export default function Index() {
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-50">
         <SafetyBanner />
+        
+        <HeroSection language={language} />
         
         <FeaturedProducts
           products={featuredProducts}
@@ -69,9 +55,9 @@ export default function Index() {
         />
 
         <Categories
-          categories={categories}
+          categories={[]}
           language={language}
-          isLoading={categoriesLoading}
+          isLoading={false}
         />
       </div>
     </ErrorBoundary>

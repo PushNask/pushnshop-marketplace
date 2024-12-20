@@ -60,10 +60,12 @@ function Layout() {
       {!isDashboard && <Header />}
       <main className="flex-1">
         <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Index />} />
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/signup" element={<Signup />} />
           
-          {/* Seller Routes */}
+          {/* Protected Seller Routes */}
           <Route
             path="/seller/*"
             element={
@@ -75,7 +77,7 @@ function Layout() {
             <Route path="products/new" element={<NewListing />} />
           </Route>
 
-          {/* Admin Routes */}
+          {/* Protected Admin Routes */}
           <Route
             path="/admin/*"
             element={
@@ -88,8 +90,6 @@ function Layout() {
             <Route path="products" element={<ProductManagement />} />
           </Route>
 
-          <Route path="/" element={<Index />} />
-          
           {/* Unauthorized Route */}
           <Route 
             path="/unauthorized" 
