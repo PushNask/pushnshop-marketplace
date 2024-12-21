@@ -16,12 +16,14 @@ export function AuthUI({ view = "sign_in" }: AuthUIProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
+  // Get the current origin for redirects
+  const origin = window.location.origin;
+
   // Set up auth state change listener
   supabase.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN') {
       setIsLoading(true);
       try {
-        // Check user role and redirect accordingly
         if (session?.user) {
           const { data: profile, error } = await supabase
             .from('profiles')
@@ -29,9 +31,7 @@ export function AuthUI({ view = "sign_in" }: AuthUIProps) {
             .eq('id', session.user.id)
             .single();
 
-          if (error) {
-            throw error;
-          }
+          if (error) throw error;
 
           if (profile) {
             const redirectPath = profile.role === 'admin' 
@@ -46,6 +46,7 @@ export function AuthUI({ view = "sign_in" }: AuthUIProps) {
           description: error.message || "Could not fetch user profile",
           variant: "destructive",
         });
+      } finally {
         setIsLoading(false);
       }
     }
@@ -90,7 +91,7 @@ export function AuthUI({ view = "sign_in" }: AuthUIProps) {
         theme="light"
         providers={[]}
         view={view}
-        redirectTo={window.location.origin}
+        redirectTo={`${origin}/auth/callback`}
         localization={{
           variables: {
             sign_up: {
