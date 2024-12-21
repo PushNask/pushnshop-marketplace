@@ -12,6 +12,11 @@ import NewListing from "./pages/seller/NewListing";
 import LinksManagement from "./pages/admin/LinksManagement";
 import ProductManagement from "./pages/admin/ProductManagement";
 
+interface RequireAuthProps {
+  children: React.ReactNode;
+  allowedRoles: string[];
+}
+
 export default function Layout() {
   const location = useLocation();
   const { user, loading } = useAuth();
@@ -100,7 +105,7 @@ export default function Layout() {
   );
 }
 
-function RequireAuth({ children, allowedRoles }) {
+function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
