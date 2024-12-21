@@ -2,6 +2,7 @@ import { Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
@@ -13,23 +14,38 @@ import ProductManagement from "./pages/admin/ProductManagement";
 
 export default function Layout() {
   const location = useLocation();
+  const { user, loading } = useAuth();
+  
+  // Check if current route is an auth route
+  const isAuthRoute = location.pathname.startsWith('/auth');
+  // Check if current route is a dashboard route
   const isDashboard = location.pathname.includes('/admin') || location.pathname.includes('/seller');
-  const { user } = useAuth();
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>;
+  }
 
   // If user is authenticated and on auth pages, redirect to appropriate dashboard
-  if (user && (location.pathname === '/auth/login' || location.pathname === '/auth/signup')) {
+  if (user && isAuthRoute) {
     return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/seller/dashboard'} replace />;
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      {!isDashboard && <Header />}
+      {!isDashboard && !isAuthRoute && <Header />}
       <main className="flex-1">
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Index />} />
-          <Route path="/auth/login" element={<Login />} />
-          <Route path="/auth/signup" element={<Signup />} />
+          
+          {/* Auth Routes */}
+          <Route path="/auth" element={<AuthLayout />}>
+            <Route path="login" element={<Login />} />
+            <Route path="signup" element={<Signup />} />
+          </Route>
           
           {/* Protected Seller Routes */}
           <Route
@@ -74,9 +90,12 @@ export default function Layout() {
               </div>
             }
           />
+
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      {!isDashboard && <Footer />}
+      {!isDashboard && !isAuthRoute && <Footer />}
     </div>
   );
 }
