@@ -21,19 +21,15 @@ export default function Layout() {
   const location = useLocation();
   const { user, loading } = useAuth();
   
-  // Check if current route is an auth route
   const isAuthRoute = location.pathname.startsWith('/auth');
-  // Check if current route is a dashboard route
   const isDashboard = location.pathname.includes('/admin') || location.pathname.includes('/seller');
 
-  // Show loading state while checking authentication
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
     </div>;
   }
 
-  // If user is authenticated and on auth pages, redirect to appropriate dashboard
   if (user && isAuthRoute) {
     return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/seller/dashboard'} replace />;
   }
@@ -57,25 +53,27 @@ export default function Layout() {
             path="/seller/*"
             element={
               <RequireAuth allowedRoles={['seller', 'admin']}>
-                <SellerDashboard />
+                <Routes>
+                  <Route path="dashboard" element={<SellerDashboard />} />
+                  <Route path="products/new" element={<NewListing />} />
+                </Routes>
               </RequireAuth>
             }
-          >
-            <Route path="products/new" element={<NewListing />} />
-          </Route>
+          />
 
           {/* Protected Admin Routes */}
           <Route
             path="/admin/*"
             element={
               <RequireAuth allowedRoles={['admin']}>
-                <AdminDashboard />
+                <Routes>
+                  <Route path="dashboard" element={<AdminDashboard />} />
+                  <Route path="links" element={<LinksManagement />} />
+                  <Route path="products" element={<ProductManagement />} />
+                </Routes>
               </RequireAuth>
             }
-          >
-            <Route path="links" element={<LinksManagement />} />
-            <Route path="products" element={<ProductManagement />} />
-          </Route>
+          />
 
           {/* Unauthorized Route */}
           <Route 
@@ -119,13 +117,10 @@ function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Check if user has required role
   if (!allowedRoles.includes(user.role)) {
-    // Redirect sellers trying to access admin routes to seller dashboard
     if (user.role === 'seller' && location.pathname.startsWith('/admin')) {
       return <Navigate to="/seller/dashboard" replace />;
     }
-    // For any other unauthorized access, show unauthorized page
     return <Navigate to="/unauthorized" replace />;
   }
 
