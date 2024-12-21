@@ -129,5 +129,5 @@ function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
     return <Navigate to="/unauthorized" replace />;
   }
 
-  return children;
+  return <>{children}</>;
 }
