@@ -46,11 +46,8 @@ export function AuthUI({ view = "sign_in" }: AuthUIProps) {
           description: error.message || "Could not fetch user profile",
           variant: "destructive",
         });
-      } finally {
         setIsLoading(false);
       }
-    } else if (event === 'SIGNED_OUT') {
-      navigate('/auth/login', { replace: true });
     }
   });
 
