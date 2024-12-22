@@ -25,14 +25,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (session?.user) {
           // Get user profile with role
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
 
+          if (profileError) {
+            throw profileError;
+          }
+
           if (profile) {
-            // Validate role type
+            // Ensure role is either 'admin' or 'seller'
             const role = profile.role === 'admin' ? 'admin' : 'seller';
             
             setUser({
@@ -51,6 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           title: "Authentication Error",
           description: "There was a problem checking your login status."
         });
+        // Clear user state on error
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -60,29 +66,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        // Get user profile with role
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
+      try {
+        if (event === 'SIGNED_IN' && session?.user) {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
 
-        if (profile) {
-          // Validate role type
-          const role = profile.role === 'admin' ? 'admin' : 'seller';
-          
-          setUser({
-            id: session.user.id,
-            email: session.user.email!,
-            role: role,
-            businessName: profile.name,
-            whatsappNumber: profile.whatsapp_number
-          });
+          if (profileError) {
+            throw profileError;
+          }
+
+          if (profile) {
+            // Ensure role is either 'admin' or 'seller'
+            const role = profile.role === 'admin' ? 'admin' : 'seller';
+            
+            setUser({
+              id: session.user.id,
+              email: session.user.email!,
+              role: role,
+              businessName: profile.name,
+              whatsappNumber: profile.whatsapp_number
+            });
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          navigate('/auth/login');
         }
-      } else if (event === 'SIGNED_OUT') {
+      } catch (error) {
+        console.error('Error handling auth state change:', error);
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "There was a problem updating your login status."
+        });
         setUser(null);
-        navigate('/auth/login');
       }
     });
 
