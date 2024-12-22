@@ -25,9 +25,11 @@ export default function Layout() {
   const isDashboard = location.pathname.includes('/admin') || location.pathname.includes('/seller');
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-    </div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   if (user && isAuthRoute) {
@@ -49,50 +51,38 @@ export default function Layout() {
           </Route>
           
           {/* Protected Seller Routes */}
-          <Route
-            path="/seller/*"
-            element={
-              <RequireAuth allowedRoles={['seller', 'admin']}>
-                <Routes>
-                  <Route path="dashboard" element={<SellerDashboard />} />
-                  <Route path="products/new" element={<NewListing />} />
-                </Routes>
-              </RequireAuth>
-            }
-          />
+          <Route path="/seller/*" element={
+            <RequireAuth allowedRoles={['seller', 'admin']}>
+              <Routes>
+                <Route path="dashboard" element={<SellerDashboard />} />
+                <Route path="products/new" element={<NewListing />} />
+              </Routes>
+            </RequireAuth>
+          } />
 
           {/* Protected Admin Routes */}
-          <Route
-            path="/admin/*"
-            element={
-              <RequireAuth allowedRoles={['admin']}>
-                <Routes>
-                  <Route path="dashboard" element={<AdminDashboard />} />
-                  <Route path="links" element={<LinksManagement />} />
-                  <Route path="products" element={<ProductManagement />} />
-                </Routes>
-              </RequireAuth>
-            }
-          />
+          <Route path="/admin/*" element={
+            <RequireAuth allowedRoles={['admin']}>
+              <Routes>
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="links" element={<LinksManagement />} />
+                <Route path="products" element={<ProductManagement />} />
+              </Routes>
+            </RequireAuth>
+          } />
 
           {/* Unauthorized Route */}
-          <Route 
-            path="/unauthorized" 
-            element={
-              <div className="flex flex-col items-center justify-center min-h-screen p-4">
-                <h1 className="text-2xl font-bold mb-4">Unauthorized Access</h1>
-                <p className="text-gray-600 mb-4 text-center">
-                  You don't have permission to access this page.
-                </p>
-                <Link 
-                  to="/"
-                  className="text-blue-600 hover:text-blue-800 underline"
-                >
-                  Return to Home
-                </Link>
-              </div>
-            }
-          />
+          <Route path="/unauthorized" element={
+            <div className="flex flex-col items-center justify-center min-h-screen p-4">
+              <h1 className="text-2xl font-bold mb-4">Unauthorized Access</h1>
+              <p className="text-gray-600 mb-4 text-center">
+                You don't have permission to access this page.
+              </p>
+              <Link to="/" className="text-blue-600 hover:text-blue-800 underline">
+                Return to Home
+              </Link>
+            </div>
+          } />
 
           {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -108,9 +98,11 @@ function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
   const location = useLocation();
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-    </div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   if (!user) {
