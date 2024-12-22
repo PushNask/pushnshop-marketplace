@@ -1,30 +1,15 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Icons } from "@/components/ui/icons";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AuthFormProps } from "./types";
+import { AuthFormFields } from "./AuthFormFields";
+import { AuthFormActions } from "./AuthFormActions";
+import { AuthFormHeader } from "./AuthFormHeader";
+import { AuthFormAlert } from "./AuthFormAlert";
 
 const authSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -44,6 +29,7 @@ type AuthFormValues = z.infer<typeof authSchema>;
 export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthFormProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [view, setView] = useState(defaultView);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -61,16 +47,27 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
     setIsLoading(true);
     try {
       if (view === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error, data: authData } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
         if (error) throw error;
         
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', authData.user.id)
+          .single();
+
+        if (!profile) throw new Error('Profile not found');
+        
         toast({
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
+
+        // Redirect to the appropriate dashboard
+        navigate(profile.role === 'admin' ? '/admin/dashboard' : '/seller/dashboard');
       } else {
         const { error } = await supabase.auth.signUp({
           email: data.email,
@@ -89,10 +86,10 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
           title: "Account created!",
           description: "Please check your email to verify your account.",
         });
+        
+        // Stay on signup page with success message
+        onSuccess?.();
       }
-
-      onSuccess?.();
-      navigate("/dashboard");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -106,143 +103,19 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
   }
 
   return (
-    <Card>
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl text-center">
-          {view === 'login' ? 'Welcome back' : 'Create seller account'}
-        </CardTitle>
-        <CardDescription className="text-center">
-          {view === 'login' 
-            ? 'Sign in to your PushNshop account'
-            : 'Start selling on PushNshop today'}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {view === 'signup' && (
-          <Alert className="mb-6 bg-blue-50 border-blue-200">
-            <AlertDescription className="text-sm text-blue-700">
-              You are creating a seller account. This will allow you to list products and manage your store.
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="your@email.com"
-                      {...field}
-                      disabled={isLoading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="••••••••"
-                      {...field}
-                      disabled={isLoading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {view === 'signup' && (
-              <>
-                <FormField
-                  control={form.control}
-                  name="businessName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Business Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Your Business Name"
-                          {...field}
-                          disabled={isLoading}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="whatsappNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>WhatsApp Number</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="+XXX XXXXXXXXX"
-                          {...field}
-                          disabled={isLoading}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
-            )}
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading && (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              {view === 'login' ? 'Sign in' : 'Create seller account'}
-            </Button>
-          </form>
-        </Form>
-
-        <div className="mt-4 text-center text-sm text-gray-500">
-          {view === 'login' ? (
-            <>
-              Don't have an account?{" "}
-              <button
-                onClick={() => setView('signup')}
-                className="text-blue-600 hover:text-blue-500"
-              >
-                Sign up
-              </button>
-            </>
-          ) : (
-            <>
-              Already have an account?{" "}
-              <button
-                onClick={() => setView('login')}
-                className="text-blue-600 hover:text-blue-500"
-              >
-                Sign in
-              </button>
-            </>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="w-full max-w-md mx-auto">
+      <AuthFormHeader view={view} />
+      <AuthFormAlert view={view} />
+      <AuthFormFields 
+        form={form} 
+        view={view} 
+        isLoading={isLoading} 
+        onSubmit={onSubmit} 
+      />
+      <AuthFormActions 
+        view={view} 
+        setView={setView} 
+      />
+    </div>
   );
 }

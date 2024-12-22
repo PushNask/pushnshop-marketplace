@@ -32,8 +32,9 @@ export default function Layout() {
     );
   }
 
+  // Redirect authenticated users away from auth routes
   if (user && isAuthRoute) {
-    return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/seller/dashboard'} replace />;
+    return <Navigate to={getDashboardPath(user.role)} replace />;
   }
 
   return (
@@ -52,7 +53,7 @@ export default function Layout() {
           
           {/* Protected Seller Routes */}
           <Route path="/seller/*" element={
-            <RequireAuth allowedRoles={['seller', 'admin']}>
+            <RequireAuth allowedRoles={['seller']}>
               <Routes>
                 <Route path="dashboard" element={<SellerDashboard />} />
                 <Route path="products/new" element={<NewListing />} />
@@ -110,11 +111,19 @@ function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
   }
 
   if (!allowedRoles.includes(user.role)) {
-    if (user.role === 'seller' && location.pathname.startsWith('/admin')) {
-      return <Navigate to="/seller/dashboard" replace />;
-    }
     return <Navigate to="/unauthorized" replace />;
   }
 
   return <>{children}</>;
+}
+
+function getDashboardPath(role: string): string {
+  switch (role) {
+    case 'admin':
+      return '/admin/dashboard';
+    case 'seller':
+      return '/seller/dashboard';
+    default:
+      return '/';
+  }
 }
