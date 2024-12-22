@@ -1,67 +1,44 @@
 import React from 'react';
-import { useLanguage } from '@/hooks/useLanguage';
-import { useCategories } from '@/hooks/useCategories';
-import { useActivePermanentLinks } from '@/hooks/useActivePermanentLinks';
-import { SafetyBanner } from '@/components/SafetyBanner';
-import { FeaturedProducts } from '@/components/home/FeaturedProducts';
-import { OtherListings } from '@/components/home/OtherListings';
-import { Categories } from '@/components/home/Categories';
-import { HeroSection } from '@/components/home/HeroSection';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-
-const formatCurrency = (price: number, currency: string = 'XAF') => {
-  return new Intl.NumberFormat('fr-CM', {
-    style: 'currency',
-    currency
-  }).format(price);
-};
+import { useAuth } from '@/hooks/useAuth';
+import { Navigate } from 'react-router-dom';
 
 export default function Index() {
-  const { language } = useLanguage();
-  const { data: categories, isLoading: categoriesLoading } = useCategories();
-  const { 
-    data: productsData, 
-    isLoading: productsLoading 
-  } = useActivePermanentLinks();
+  const { user, loading } = useAuth();
 
-  const MAX_CAPACITY = 120;
-  const FEATURED_COUNT = 12;
-
-  // Process products data
-  const allProducts = productsData || [];
-  const isAtFullCapacity = allProducts.length >= MAX_CAPACITY;
-
-  const featuredProducts = allProducts.slice(0, FEATURED_COUNT);
-  const otherProducts = allProducts.slice(FEATURED_COUNT);
-
-  return (
-    <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50">
-        <SafetyBanner />
-        
-        <HeroSection language={language} />
-        
-        <FeaturedProducts
-          products={featuredProducts}
-          language={language}
-          loadingProducts={productsLoading}
-          isAtFullCapacity={isAtFullCapacity}
-          formatCurrency={formatCurrency}
-        />
-
-        <OtherListings
-          products={otherProducts}
-          language={language}
-          featuredCount={FEATURED_COUNT}
-          formatCurrency={formatCurrency}
-        />
-
-        <Categories
-          categories={categories || []}
-          language={language}
-          isLoading={categoriesLoading}
-        />
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
-    </ErrorBoundary>
+    );
+  }
+
+  // If user is logged in, redirect to their dashboard
+  if (user) {
+    return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/seller/dashboard'} replace />;
+  }
+
+  // Otherwise, show the public home page
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold text-center mb-8">Welcome to PushNshop</h1>
+      <div className="text-center">
+        <p className="text-xl mb-4">Your one-stop marketplace for local buying and selling</p>
+        <div className="flex justify-center gap-4">
+          <a 
+            href="/auth/login" 
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Login
+          </a>
+          <a 
+            href="/auth/signup" 
+            className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors"
+          >
+            Sign Up
+          </a>
+        </div>
+      </div>
+    </div>
   );
 }

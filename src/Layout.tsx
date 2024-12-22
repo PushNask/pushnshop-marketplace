@@ -37,6 +37,11 @@ export default function Layout() {
     return <Navigate to={getDashboardPath(user.role)} replace />;
   }
 
+  // Redirect root to appropriate dashboard if user is logged in
+  if (user && location.pathname === '/') {
+    return <Navigate to={getDashboardPath(user.role)} replace />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       {!isDashboard && !isAuthRoute && <Header />}
