@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
