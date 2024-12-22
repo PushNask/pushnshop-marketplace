@@ -55,6 +55,7 @@ export default function Layout() {
           <Route path="/seller/*" element={
             <RequireAuth allowedRoles={['seller']}>
               <Routes>
+                <Route path="/" element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<SellerDashboard />} />
                 <Route path="products/new" element={<NewListing />} />
               </Routes>
@@ -65,6 +66,7 @@ export default function Layout() {
           <Route path="/admin/*" element={
             <RequireAuth allowedRoles={['admin']}>
               <Routes>
+                <Route path="/" element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="links" element={<LinksManagement />} />
                 <Route path="products" element={<ProductManagement />} />
