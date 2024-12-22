@@ -32,10 +32,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .single();
 
           if (profile) {
+            // Validate role type
+            const role = profile.role === 'admin' ? 'admin' : 'seller';
+            
             setUser({
               id: session.user.id,
               email: session.user.email!,
-              role: profile.role,
+              role: role,
               businessName: profile.name,
               whatsappNumber: profile.whatsapp_number
             });
@@ -66,10 +69,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .single();
 
         if (profile) {
+          // Validate role type
+          const role = profile.role === 'admin' ? 'admin' : 'seller';
+          
           setUser({
             id: session.user.id,
             email: session.user.email!,
-            role: profile.role,
+            role: role,
             businessName: profile.name,
             whatsappNumber: profile.whatsapp_number
           });
