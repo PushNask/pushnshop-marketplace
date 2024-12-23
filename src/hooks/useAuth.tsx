@@ -18,54 +18,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check active sessions and get user profile data
-    const checkUser = async () => {
+    // Check active session on mount
+    const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {
-          // Get user profile with role
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
 
-          if (profileError) {
-            throw profileError;
-          }
+          if (profileError) throw profileError;
 
           if (profile) {
-            // Ensure role is either 'admin' or 'seller'
-            const role = profile.role === 'admin' ? 'admin' : 'seller';
-            
             setUser({
               id: session.user.id,
               email: session.user.email!,
-              role: role,
+              role: profile.role,
               businessName: profile.name,
               whatsappNumber: profile.whatsapp_number
             });
           }
         }
       } catch (error) {
-        console.error('Error checking user session:', error);
-        toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: "There was a problem checking your login status."
-        });
-        // Clear user state on error
+        console.error('Session check error:', error);
         setUser(null);
       } finally {
         setLoading(false);
       }
     };
 
-    checkUser();
+    checkSession();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
+      
       try {
         if (event === 'SIGNED_IN' && session?.user) {
           const { data: profile, error: profileError } = await supabase
@@ -74,33 +64,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .eq('id', session.user.id)
             .single();
 
-          if (profileError) {
-            throw profileError;
-          }
+          if (profileError) throw profileError;
 
           if (profile) {
-            // Ensure role is either 'admin' or 'seller'
-            const role = profile.role === 'admin' ? 'admin' : 'seller';
-            
             setUser({
               id: session.user.id,
               email: session.user.email!,
-              role: role,
+              role: profile.role,
               businessName: profile.name,
               whatsappNumber: profile.whatsapp_number
             });
           }
+          
+          navigate('/');
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           navigate('/auth/login');
         }
       } catch (error) {
-        console.error('Error handling auth state change:', error);
-        toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: "There was a problem updating your login status."
-        });
+        console.error('Auth state change error:', error);
         setUser(null);
       }
     });
@@ -116,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       navigate('/auth/login');
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('Sign out error:', error);
       toast({
         variant: "destructive",
         title: "Error signing out",

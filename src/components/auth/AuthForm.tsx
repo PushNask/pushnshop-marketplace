@@ -45,33 +45,35 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
   });
 
   async function onSubmit(data: AuthFormValues) {
+    console.log(`Starting ${view} attempt for:`, data.email);
     setIsLoading(true);
     setAuthError(null);
     
     try {
       if (view === 'login') {
-        console.log('Starting login attempt for:', data.email);
-        
         const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
 
-        if (signInError) throw signInError;
-
-        if (!authData?.user) {
-          throw new Error('Login failed. Please try again.');
+        if (signInError) {
+          console.error('Login error:', signInError);
+          throw signInError;
         }
 
+        if (!authData?.user) {
+          throw new Error('Login failed - no user data returned');
+        }
+
+        console.log('Login successful:', authData.user.id);
         toast({
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
 
         onSuccess?.();
+        navigate('/');
       } else {
-        console.log('Attempting signup with:', { email: data.email });
-        
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
@@ -84,18 +86,23 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
           },
         });
 
-        if (signUpError) throw signUpError;
-
-        if (!signUpData.user) {
-          throw new Error('Signup failed. Please try again.');
+        if (signUpError) {
+          console.error('Signup error:', signUpError);
+          throw signUpError;
         }
 
+        if (!signUpData.user) {
+          throw new Error('Signup failed - no user data returned');
+        }
+
+        console.log('Signup successful:', signUpData.user.id);
         toast({
           title: "Account created!",
           description: "Please check your email to verify your account.",
         });
         
         onSuccess?.();
+        navigate('/auth/verify');
       }
     } catch (error: any) {
       console.error('Auth error:', error);

@@ -1,7 +1,7 @@
 import { Outlet, Link } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Suspense } from "react";
-import { LoadingScreen } from "@/components/shared/LoadingScreen";
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 
 export function AuthLayout() {
   return (
@@ -13,7 +13,7 @@ export function AuthLayout() {
       </div>
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <ErrorBoundary>
-          <Suspense fallback={<LoadingScreen />}>
+          <Suspense fallback={<LoadingSpinner size="lg" />}>
             <Outlet />
           </Suspense>
         </ErrorBoundary>
