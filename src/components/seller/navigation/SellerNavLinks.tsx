@@ -1,4 +1,4 @@
-import { ShoppingBag, BarChart, User } from "lucide-react";
+import { ShoppingBag, BarChart, User, Plus } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { SidebarLink } from "@/components/seller/SidebarLink";
 
@@ -7,14 +7,19 @@ export function SellerNavLinks() {
   
   const links = [
     {
-      to: "/seller/products",
-      icon: <ShoppingBag className="h-5 w-5" />,
-      label: language === 'en' ? "Products" : "Produits"
+      to: "/seller/dashboard",
+      icon: <BarChart className="h-5 w-5" />,
+      label: language === 'en' ? "Dashboard" : "Tableau de bord"
     },
     {
-      to: "/seller/analytics",
-      icon: <BarChart className="h-5 w-5" />,
-      label: language === 'en' ? "Analytics" : "Analytique"
+      to: "/seller/products/new",
+      icon: <Plus className="h-5 w-5" />,
+      label: language === 'en' ? "Create Listing" : "Créer une annonce"
+    },
+    {
+      to: "/seller/products",
+      icon: <ShoppingBag className="h-5 w-5" />,
+      label: language === 'en' ? "My Products" : "Mes Produits"
     },
     {
       to: "/seller/profile",

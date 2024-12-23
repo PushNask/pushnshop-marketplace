@@ -51,7 +51,7 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
       if (view === 'login') {
         console.log('Starting login attempt for:', data.email);
         
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
@@ -61,12 +61,30 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
           throw signInError;
         }
 
+        if (!authData?.user) {
+          throw new Error('Login failed. Please try again.');
+        }
+
+        // Get user profile to determine role
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', authData.user.id)
+          .single();
+
+        if (profileError) {
+          console.error('Profile fetch error:', profileError);
+          throw profileError;
+        }
+
         toast({
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
 
-        navigate('/seller/dashboard', { replace: true });
+        // Redirect based on role
+        const redirectPath = profile?.role === 'admin' ? '/admin/dashboard' : '/seller/dashboard';
+        navigate(redirectPath, { replace: true });
         onSuccess?.();
       } else {
         console.log('Attempting signup with:', { email: data.email });
