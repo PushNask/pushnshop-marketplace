@@ -89,7 +89,7 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
       } else {
         console.log('Attempting signup with:', { email: data.email });
         
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
           options: {
@@ -104,6 +104,10 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
         if (signUpError) {
           console.error('Sign up error:', signUpError);
           throw signUpError;
+        }
+
+        if (!signUpData.user) {
+          throw new Error('Signup failed. Please try again.');
         }
 
         toast({
