@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -29,9 +29,9 @@ type AuthFormValues = z.infer<typeof authSchema>;
 export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthFormProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
   const [view, setView] = useState(defaultView);
   const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const form = useForm<AuthFormValues>({
     resolver: zodResolver(authSchema),
@@ -45,31 +45,32 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
 
   async function onSubmit(data: AuthFormValues) {
     setIsLoading(true);
+    setAuthError(null);
+    
     try {
       if (view === 'login') {
-        const { error, data: authData } = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
-        if (error) throw error;
-        
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', authData.user.id)
-          .single();
 
-        if (!profile) throw new Error('Profile not found');
-        
+        if (signInError) {
+          if (signInError.message.includes('Invalid login credentials')) {
+            throw new Error('Invalid email or password');
+          }
+          throw signInError;
+        }
+
+        // If we get here, login was successful
         toast({
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
 
-        // Redirect to the appropriate dashboard
-        navigate(profile.role === 'admin' ? '/admin/dashboard' : '/seller/dashboard');
+        // Let the parent component handle success (e.g., redirect)
+        onSuccess?.();
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
           options: {
@@ -80,7 +81,8 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
             },
           },
         });
-        if (error) throw error;
+
+        if (signUpError) throw signUpError;
 
         toast({
           title: "Account created!",
@@ -91,11 +93,15 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
         onSuccess?.();
       }
     } catch (error: any) {
+      const errorMessage = error.message || 'An error occurred during authentication';
+      setAuthError(errorMessage);
+      
       toast({
         variant: "destructive",
         title: view === 'login' ? "Error signing in" : "Error creating account",
-        description: error.message,
+        description: errorMessage,
       });
+      
       onError?.(error);
     } finally {
       setIsLoading(false);
@@ -105,7 +111,7 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
   return (
     <div className="w-full max-w-md mx-auto">
       <AuthFormHeader view={view} />
-      <AuthFormAlert view={view} />
+      <AuthFormAlert view={view} error={authError} />
       <AuthFormFields 
         form={form} 
         view={view} 

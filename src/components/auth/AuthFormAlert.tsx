@@ -1,17 +1,30 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface AuthFormAlertProps {
   view: 'login' | 'signup';
+  error?: string | null;
 }
 
-export function AuthFormAlert({ view }: AuthFormAlertProps) {
-  if (view !== 'signup') return null;
-  
-  return (
-    <Alert className="mb-6 bg-blue-50 border-blue-200">
-      <AlertDescription className="text-sm text-blue-700">
-        You are creating a seller account. This will allow you to list products and manage your store.
-      </AlertDescription>
-    </Alert>
-  );
+export function AuthFormAlert({ view, error }: AuthFormAlertProps) {
+  if (error) {
+    return (
+      <Alert variant="destructive" className="mb-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (view === 'signup') {
+    return (
+      <Alert className="mb-4">
+        <AlertDescription>
+          Create a seller account to start listing your products.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  return null;
 }
