@@ -2,7 +2,16 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { User } from "@/components/auth/types";
+
+type UserRole = "seller" | "admin";
+
+interface User {
+  id: string;
+  email: string;
+  role: UserRole;
+  businessName?: string;
+  whatsappNumber?: string;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -33,10 +42,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (profileError) throw profileError;
 
           if (profile) {
+            // Ensure role is of type UserRole
+            const role = profile.role as UserRole;
+            if (role !== 'admin' && role !== 'seller') {
+              throw new Error('Invalid user role');
+            }
+
             setUser({
               id: session.user.id,
               email: session.user.email!,
-              role: profile.role,
+              role: role,
               businessName: profile.name,
               whatsappNumber: profile.whatsapp_number
             });
@@ -67,10 +82,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (profileError) throw profileError;
 
           if (profile) {
+            // Ensure role is of type UserRole
+            const role = profile.role as UserRole;
+            if (role !== 'admin' && role !== 'seller') {
+              throw new Error('Invalid user role');
+            }
+
             setUser({
               id: session.user.id,
               email: session.user.email!,
-              role: profile.role,
+              role: role,
               businessName: profile.name,
               whatsappNumber: profile.whatsapp_number
             });
@@ -84,6 +105,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error('Auth state change error:', error);
         setUser(null);
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "There was a problem with your authentication. Please try logging in again."
+        });
       }
     });
 
