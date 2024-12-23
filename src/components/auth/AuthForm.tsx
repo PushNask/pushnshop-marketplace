@@ -50,16 +50,22 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
     
     try {
       if (view === 'login') {
+        // First, attempt to sign in
         const { error: signInError, data: authData } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
 
         if (signInError) {
+          console.error('Sign in error:', signInError);
           if (signInError.message.includes('Invalid login credentials')) {
             throw new Error('Invalid email or password. Please check your credentials and try again.');
           }
           throw signInError;
+        }
+
+        if (!authData.user) {
+          throw new Error('No user data returned after login');
         }
 
         // Get user profile to determine role
@@ -69,7 +75,14 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
           .eq('id', authData.user.id)
           .single();
 
-        if (profileError) throw new Error('Could not fetch user profile');
+        if (profileError) {
+          console.error('Profile fetch error:', profileError);
+          throw new Error('Could not fetch user profile');
+        }
+
+        if (!profile) {
+          throw new Error('No profile found for user');
+        }
 
         toast({
           title: "Welcome back!",
@@ -94,7 +107,10 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
           },
         });
 
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          console.error('Sign up error:', signUpError);
+          throw signUpError;
+        }
 
         toast({
           title: "Account created!",
@@ -104,6 +120,7 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
         onSuccess?.();
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
       const errorMessage = error.message || 'An error occurred during authentication';
       setAuthError(errorMessage);
       
