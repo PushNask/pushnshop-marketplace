@@ -58,13 +58,17 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
 
         if (signInError) {
           console.error('Sign in error:', signInError);
+          // Check for specific error cases
+          if (signInError.message.includes('Email not confirmed')) {
+            throw new Error('Please verify your email address before logging in.');
+          }
           if (signInError.message.includes('Invalid login credentials')) {
             throw new Error('Invalid email or password. Please check your credentials and try again.');
           }
           throw signInError;
         }
 
-        if (!authData.user) {
+        if (!authData?.user) {
           throw new Error('No user data returned after login');
         }
 
@@ -95,6 +99,7 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
         
         onSuccess?.();
       } else {
+        // Handle signup
         const { error: signUpError } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
