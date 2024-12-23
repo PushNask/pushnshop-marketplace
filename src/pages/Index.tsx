@@ -1,11 +1,31 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { Navigate } from 'react-router-dom';
+import { FeaturedProducts } from '@/components/home/FeaturedProducts';
+import { OtherListings } from '@/components/home/OtherListings';
+import { linkService } from '@/services/linkService';
 
 export default function Index() {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { language } = useLanguage();
 
-  if (loading) {
+  const { data: products, isLoading: loadingProducts } = useQuery({
+    queryKey: ['active-products'],
+    queryFn: () => linkService.getActivePermanentLinks(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Format currency helper
+  const formatCurrency = (price: number, currency: string = 'XAF') => {
+    return new Intl.NumberFormat('fr-CM', {
+      style: 'currency',
+      currency: currency
+    }).format(price);
+  };
+
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -18,27 +38,27 @@ export default function Index() {
     return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/seller/dashboard'} replace />;
   }
 
-  // Otherwise, show the public home page
+  const FEATURED_COUNT = 12;
+  const isAtFullCapacity = products && products.length >= 120;
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-center mb-8">Welcome to PushNshop</h1>
-      <div className="text-center">
-        <p className="text-xl mb-4">Your one-stop marketplace for local buying and selling</p>
-        <div className="flex justify-center gap-4">
-          <a 
-            href="/auth/login" 
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
-          >
-            Login
-          </a>
-          <a 
-            href="/auth/signup" 
-            className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors"
-          >
-            Sign Up
-          </a>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Featured Products Section */}
+      <FeaturedProducts
+        products={products?.slice(0, FEATURED_COUNT) || []}
+        language={language}
+        loadingProducts={loadingProducts}
+        isAtFullCapacity={isAtFullCapacity}
+        formatCurrency={formatCurrency}
+      />
+
+      {/* Other Listings Section */}
+      <OtherListings
+        products={products?.slice(FEATURED_COUNT) || []}
+        language={language}
+        featuredCount={FEATURED_COUNT}
+        formatCurrency={formatCurrency}
+      />
     </div>
   );
 }

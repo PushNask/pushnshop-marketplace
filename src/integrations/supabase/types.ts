@@ -207,6 +207,33 @@ export type Database = {
           },
         ]
       }
+      password_resets: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          token: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          token: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          token?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -316,7 +343,9 @@ export type Database = {
       products: {
         Row: {
           created_at: string | null
+          currency: string | null
           description: string | null
+          duration_hours: number | null
           id: string
           images: string[] | null
           is_verified: boolean | null
@@ -328,7 +357,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          currency?: string | null
           description?: string | null
+          duration_hours?: number | null
           id?: string
           images?: string[] | null
           is_verified?: boolean | null
@@ -340,7 +371,9 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          currency?: string | null
           description?: string | null
+          duration_hours?: number | null
           id?: string
           images?: string[] | null
           is_verified?: boolean | null
