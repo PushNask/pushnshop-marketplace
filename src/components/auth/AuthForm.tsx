@@ -58,52 +58,30 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
 
         if (signInError) {
           console.error('Sign in error:', signInError);
-          
-          if (signInError.message.includes('Email not confirmed')) {
-            throw new Error('Please verify your email address before logging in. Check your inbox for the verification email.');
-          }
-          
-          throw new Error('Invalid email or password. Please check your credentials and try again.');
+          throw signInError;
         }
 
         if (!authData?.user) {
-          console.error('No user data returned after login');
           throw new Error('Login failed. Please try again.');
         }
-
-        console.log('Auth successful, fetching user profile...');
-
-        // Get user profile to determine role
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', authData.user.id)
-          .single();
-
-        if (profileError) {
-          console.error('Profile fetch error:', profileError);
-          throw new Error('Could not fetch user profile. Please try again.');
-        }
-
-        if (!profile) {
-          console.error('No profile found for user');
-          throw new Error('User profile not found. Please contact support.');
-        }
-
-        console.log('Login successful:', { role: profile.role });
 
         toast({
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
 
-        // Redirect based on role
-        const redirectPath = profile.role === 'admin' ? '/admin/dashboard' : '/seller/dashboard';
+        // Redirect based on role after successful login
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', authData.user.id)
+          .single();
+
+        const redirectPath = profile?.role === 'admin' ? '/admin/dashboard' : '/seller/dashboard';
         navigate(redirectPath, { replace: true });
         
         onSuccess?.();
       } else {
-        // Handle signup
         console.log('Attempting signup with:', { email: data.email });
         
         const { error: signUpError } = await supabase.auth.signUp({
@@ -132,7 +110,15 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
       }
     } catch (error: any) {
       console.error('Auth error:', error);
-      const errorMessage = error.message || 'An error occurred during authentication';
+      
+      let errorMessage = 'An error occurred during authentication';
+      
+      if (error.message.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      } else if (error.message.includes('Email not confirmed')) {
+        errorMessage = 'Please verify your email address before logging in.';
+      }
+      
       setAuthError(errorMessage);
       
       toast({
