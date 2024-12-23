@@ -63,10 +63,9 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
           if (signInError.message.includes('Email not confirmed')) {
             throw new Error('Please verify your email address before logging in. Check your inbox for the verification email.');
           }
-          if (signInError.message.includes('Invalid login credentials')) {
-            throw new Error('Invalid email or password. Please check your credentials and try again.');
-          }
-          throw signInError;
+          
+          // Provide a more user-friendly error message
+          throw new Error('Invalid email or password. Please check your credentials and try again.');
         }
 
         if (!authData?.user) {
