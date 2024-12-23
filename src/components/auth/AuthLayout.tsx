@@ -1,5 +1,7 @@
-import { Outlet } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Suspense } from "react";
+import { LoadingScreen } from "@/components/shared/LoadingScreen";
 
 export function AuthLayout() {
   return (
@@ -10,7 +12,11 @@ export function AuthLayout() {
         </Link>
       </div>
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <Outlet />
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingScreen />}>
+            <Outlet />
+          </Suspense>
+        </ErrorBoundary>
       </div>
     </div>
   );

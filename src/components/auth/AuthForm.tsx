@@ -10,6 +10,7 @@ import { AuthFormFields } from "./AuthFormFields";
 import { AuthFormActions } from "./AuthFormActions";
 import { AuthFormHeader } from "./AuthFormHeader";
 import { AuthFormAlert } from "./AuthFormAlert";
+import { Card } from "@/components/ui/card";
 
 const authSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -51,41 +52,15 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
       if (view === 'login') {
         console.log('Starting login attempt for:', data.email);
         
-        // First check if the user exists
-        const { data: existingUser, error: userCheckError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', data.email)
-          .single();
-
-        if (userCheckError || !existingUser) {
-          throw new Error('No account found with this email. Please sign up first.');
-        }
-
         const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
 
-        if (signInError) {
-          console.error('Sign in error:', signInError);
-          throw signInError;
-        }
+        if (signInError) throw signInError;
 
         if (!authData?.user) {
           throw new Error('Login failed. Please try again.');
-        }
-
-        // Get user profile to determine role
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', authData.user.id)
-          .single();
-
-        if (profileError) {
-          console.error('Profile fetch error:', profileError);
-          throw profileError;
         }
 
         toast({
@@ -93,9 +68,6 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
           description: "You have successfully signed in.",
         });
 
-        // Redirect based on role
-        const redirectPath = profile?.role === 'admin' ? '/admin/dashboard' : '/seller/dashboard';
-        navigate(redirectPath, { replace: true });
         onSuccess?.();
       } else {
         console.log('Attempting signup with:', { email: data.email });
@@ -112,10 +84,7 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
           },
         });
 
-        if (signUpError) {
-          console.error('Sign up error:', signUpError);
-          throw signUpError;
-        }
+        if (signUpError) throw signUpError;
 
         if (!signUpData.user) {
           throw new Error('Signup failed. Please try again.');
@@ -137,8 +106,6 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
         errorMessage = 'Invalid email or password. Please check your credentials and try again.';
       } else if (error.message.includes('Email not confirmed')) {
         errorMessage = 'Please verify your email address before logging in.';
-      } else if (error.message.includes('No account found')) {
-        errorMessage = error.message;
       }
       
       setAuthError(errorMessage);
@@ -156,7 +123,7 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto p-6">
       <AuthFormHeader view={view} />
       <AuthFormAlert view={view} error={authError} />
       <AuthFormFields 
@@ -169,6 +136,6 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
         view={view} 
         setView={setView} 
       />
-    </div>
+    </Card>
   );
 }
