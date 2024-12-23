@@ -50,6 +50,8 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
     
     try {
       if (view === 'login') {
+        console.log('Attempting login with:', { email: data.email });
+        
         // First, attempt to sign in
         const { error: signInError, data: authData } = await supabase.auth.signInWithPassword({
           email: data.email,
@@ -58,9 +60,10 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
 
         if (signInError) {
           console.error('Sign in error:', signInError);
+          
           // Check for specific error cases
           if (signInError.message.includes('Email not confirmed')) {
-            throw new Error('Please verify your email address before logging in.');
+            throw new Error('Please verify your email address before logging in. Check your inbox for the verification email.');
           }
           if (signInError.message.includes('Invalid login credentials')) {
             throw new Error('Invalid email or password. Please check your credentials and try again.');
@@ -69,7 +72,8 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
         }
 
         if (!authData?.user) {
-          throw new Error('No user data returned after login');
+          console.error('No user data returned after login');
+          throw new Error('Login failed. Please try again.');
         }
 
         // Get user profile to determine role
@@ -81,12 +85,15 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
 
         if (profileError) {
           console.error('Profile fetch error:', profileError);
-          throw new Error('Could not fetch user profile');
+          throw new Error('Could not fetch user profile. Please try again.');
         }
 
         if (!profile) {
-          throw new Error('No profile found for user');
+          console.error('No profile found for user');
+          throw new Error('User profile not found. Please contact support.');
         }
+
+        console.log('Login successful:', { role: profile.role });
 
         toast({
           title: "Welcome back!",
@@ -100,6 +107,8 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
         onSuccess?.();
       } else {
         // Handle signup
+        console.log('Attempting signup with:', { email: data.email });
+        
         const { error: signUpError } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
