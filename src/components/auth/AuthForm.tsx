@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -29,7 +29,6 @@ type AuthFormValues = z.infer<typeof authSchema>;
 export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthFormProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
   const [view, setView] = useState(defaultView);
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -64,7 +63,6 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
             throw new Error('Please verify your email address before logging in. Check your inbox for the verification email.');
           }
           
-          // Provide a more user-friendly error message
           throw new Error('Invalid email or password. Please check your credentials and try again.');
         }
 
