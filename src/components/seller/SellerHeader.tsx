@@ -13,8 +13,8 @@ import { useLanguage } from "@/hooks/useLanguage";
 
 interface SellerHeaderProps {
   profile?: {
-    name: string;
-    avatar: string | null;
+    name?: string;
+    avatar?: string | null;
   };
   onMenuClick: () => void;
 }
