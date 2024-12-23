@@ -50,9 +50,23 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
     
     try {
       if (view === 'login') {
-        console.log('Attempting login with:', { email: data.email });
+        console.log('Starting login attempt for:', data.email);
         
-        // First, attempt to sign in
+        // First check if the user exists
+        const { data: existingUser, error: userCheckError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', data.email)
+          .single();
+
+        if (userCheckError) {
+          console.error('Error checking user existence:', userCheckError);
+          if (userCheckError.code === 'PGRST116') {
+            throw new Error('No account found with this email. Please sign up first.');
+          }
+        }
+        
+        // Attempt to sign in
         const { error: signInError, data: authData } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
@@ -61,7 +75,6 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
         if (signInError) {
           console.error('Sign in error:', signInError);
           
-          // Check for specific error cases
           if (signInError.message.includes('Email not confirmed')) {
             throw new Error('Please verify your email address before logging in. Check your inbox for the verification email.');
           }
@@ -75,6 +88,8 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
           console.error('No user data returned after login');
           throw new Error('Login failed. Please try again.');
         }
+
+        console.log('Auth successful, fetching user profile...');
 
         // Get user profile to determine role
         const { data: profile, error: profileError } = await supabase
