@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -29,6 +29,7 @@ type AuthFormValues = z.infer<typeof authSchema>;
 export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthFormProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [view, setView] = useState(defaultView);
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -49,25 +50,36 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
     
     try {
       if (view === 'login') {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { error: signInError, data: authData } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
 
         if (signInError) {
           if (signInError.message.includes('Invalid login credentials')) {
-            throw new Error('Invalid email or password');
+            throw new Error('Invalid email or password. Please check your credentials and try again.');
           }
           throw signInError;
         }
 
-        // If we get here, login was successful
+        // Get user profile to determine role
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', authData.user.id)
+          .single();
+
+        if (profileError) throw new Error('Could not fetch user profile');
+
         toast({
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
 
-        // Let the parent component handle success (e.g., redirect)
+        // Redirect based on role
+        const redirectPath = profile.role === 'admin' ? '/admin/dashboard' : '/seller/dashboard';
+        navigate(redirectPath, { replace: true });
+        
         onSuccess?.();
       } else {
         const { error: signUpError } = await supabase.auth.signUp({
@@ -89,7 +101,6 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
           description: "Please check your email to verify your account.",
         });
         
-        // Stay on signup page with success message
         onSuccess?.();
       }
     } catch (error: any) {
