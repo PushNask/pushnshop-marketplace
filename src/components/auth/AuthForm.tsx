@@ -52,21 +52,6 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
       if (view === 'login') {
         console.log('Starting login attempt for:', data.email);
         
-        // First check if the user exists
-        const { data: existingUser, error: userCheckError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', data.email)
-          .single();
-
-        if (userCheckError) {
-          console.error('Error checking user existence:', userCheckError);
-          if (userCheckError.code === 'PGRST116') {
-            throw new Error('No account found with this email. Please sign up first.');
-          }
-        }
-        
-        // Attempt to sign in
         const { error: signInError, data: authData } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
