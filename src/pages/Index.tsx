@@ -17,8 +17,10 @@ export default function Index() {
     queryFn: () => linkService.getActivePermanentLinks(),
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 2,
-    onError: (error) => {
-      console.error('Error fetching products:', error);
+    meta: {
+      onError: (error: Error) => {
+        console.error('Error fetching products:', error);
+      }
     }
   });
 
