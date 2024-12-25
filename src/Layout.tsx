@@ -11,6 +11,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import NewListing from "./pages/seller/NewListing";
 import LinksManagement from "./pages/admin/LinksManagement";
 import ProductManagement from "./pages/admin/ProductManagement";
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 
 interface RequireAuthProps {
   children: React.ReactNode;
@@ -27,17 +28,17 @@ export default function Layout() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
 
-  // Redirect authenticated users away from auth routes
+  // Only redirect authenticated users away from auth routes
   if (user && isAuthRoute) {
     return <Navigate to={getDashboardPath(user.role)} replace />;
   }
 
-  // Redirect root to appropriate dashboard if user is logged in
+  // Only redirect root to dashboard if user is logged in
   if (user && location.pathname === '/') {
     return <Navigate to={getDashboardPath(user.role)} replace />;
   }
@@ -79,20 +80,7 @@ export default function Layout() {
             </RequireAuth>
           } />
 
-          {/* Unauthorized Route */}
-          <Route path="/unauthorized" element={
-            <div className="flex flex-col items-center justify-center min-h-screen p-4">
-              <h1 className="text-2xl font-bold mb-4">Unauthorized Access</h1>
-              <p className="text-gray-600 mb-4 text-center">
-                You don't have permission to access this page.
-              </p>
-              <Link to="/" className="text-blue-600 hover:text-blue-800 underline">
-                Return to Home
-              </Link>
-            </div>
-          } />
-
-          {/* Catch-all redirect */}
+          {/* Catch-all redirect to home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -108,7 +96,7 @@ function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
