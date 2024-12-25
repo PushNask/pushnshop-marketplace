@@ -17,16 +17,17 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
 });
 
 const App = () => (
   <ErrorBoundary>
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <LoadingProvider>
-          <AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <LoadingProvider>
             <LanguageProvider>
               <TooltipProvider>
                 <Suspense fallback={
@@ -40,10 +41,10 @@ const App = () => (
                 <Sonner />
               </TooltipProvider>
             </LanguageProvider>
-          </AuthProvider>
-        </LoadingProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
+          </LoadingProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   </ErrorBoundary>
 );
 

@@ -19,11 +19,13 @@ import { ImageUploadSection } from '@/components/seller/listing/ImageUploadSecti
 import { ProductInfoSection } from '@/components/seller/listing/ProductInfoSection';
 import { productSchema, type ProductFormValues } from '@/types/products';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function NewListing() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
+  const { user } = useAuth();
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -34,44 +36,49 @@ export default function NewListing() {
       currency: 'XAF',
       duration_hours: 24,
       images: [],
-      whatsapp_number: ''
     }
   });
 
   const createProduct = useMutation({
     mutationFn: async (data: ProductFormValues) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Upload images first
-      const imageUrls = await Promise.all(
-        data.images.map(async (img) => {
-          const fileName = `${crypto.randomUUID()}.${img.name.split('.').pop()}`;
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('product-images')
-            .upload(fileName, img);
+      try {
+        // Upload images first
+        const imageUrls = await Promise.all(
+          data.images.map(async (img) => {
+            const fileName = `${crypto.randomUUID()}.${img.name.split('.').pop()}`;
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('product-images')
+              .upload(fileName, img);
 
-          if (uploadError) throw uploadError;
-          return uploadData.path;
-        })
-      );
+            if (uploadError) throw uploadError;
+            return uploadData.path;
+          })
+        );
 
-      // Create product
-      const { data: product, error } = await supabase
-        .from('products')
-        .insert({
-          title: data.title,
-          description: data.description,
-          price: data.price,
-          images: imageUrls,
-          seller_id: user.id,
-          status: 'pending'
-        })
-        .select()
-        .single();
+        // Create product
+        const { data: product, error } = await supabase
+          .from('products')
+          .insert({
+            title: data.title,
+            description: data.description,
+            price: data.price,
+            currency: data.currency,
+            duration_hours: data.duration_hours,
+            images: imageUrls,
+            seller_id: user.id,
+            status: 'pending'
+          })
+          .select()
+          .single();
 
-      if (error) throw error;
-      return product;
+        if (error) throw error;
+        return product;
+      } catch (error) {
+        console.error('Error creating product:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       toast({
@@ -80,9 +87,9 @@ export default function NewListing() {
           ? 'Your listing has been created successfully'
           : 'Votre annonce a été créée avec succès'
       });
-      navigate('/seller/products');
+      navigate('/seller/dashboard');
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: language === 'en' ? 'Error' : 'Erreur',
         description: error.message,
@@ -91,8 +98,12 @@ export default function NewListing() {
     }
   });
 
-  const onSubmit = (data: ProductFormValues) => {
-    createProduct.mutate(data);
+  const onSubmit = async (data: ProductFormValues) => {
+    try {
+      await createProduct.mutateAsync(data);
+    } catch (error) {
+      console.error('Form submission error:', error);
+    }
   };
 
   return (
