@@ -10,15 +10,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useLoading } from "@/components/providers/LoadingProvider";
 
 interface AuthFormFieldsProps {
   form: UseFormReturn<any>;
   view: 'login' | 'signup';
-  isLoading: boolean;
   onSubmit: (data: any) => void;
 }
 
-export function AuthFormFields({ form, view, isLoading, onSubmit }: AuthFormFieldsProps) {
+export function AuthFormFields({ form, view, onSubmit }: AuthFormFieldsProps) {
+  const { isLoading } = useLoading();
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

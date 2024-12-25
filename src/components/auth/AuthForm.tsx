@@ -11,6 +11,7 @@ import { AuthFormActions } from "./AuthFormActions";
 import { AuthFormHeader } from "./AuthFormHeader";
 import { AuthFormAlert } from "./AuthFormAlert";
 import { Card } from "@/components/ui/card";
+import { useLoading } from "@/components/providers/LoadingProvider";
 
 const authSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -31,7 +32,7 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
   const { toast } = useToast();
   const navigate = useNavigate();
   const [view, setView] = useState(defaultView);
-  const [isLoading, setIsLoading] = useState(false);
+  const { setIsLoading } = useLoading();
   const [authError, setAuthError] = useState<string | null>(null);
 
   const form = useForm<AuthFormValues>({
@@ -136,7 +137,6 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
       <AuthFormFields 
         form={form} 
         view={view} 
-        isLoading={isLoading} 
         onSubmit={onSubmit} 
       />
       <AuthFormActions 
