@@ -2,21 +2,13 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-
-type UserRole = "seller" | "admin";
-
-interface User {
-  id: string;
-  email: string;
-  role: UserRole;
-  businessName?: string;
-  whatsappNumber?: string;
-}
+import { User } from "@/components/auth/types";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,90 +18,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Check active session on mount
-    const checkSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
+  const refreshUser = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
 
-          if (profileError) throw profileError;
+        if (profileError) throw profileError;
 
-          if (profile) {
-            // Ensure role is of type UserRole
-            const role = profile.role as UserRole;
-            if (role !== 'admin' && role !== 'seller') {
-              throw new Error('Invalid user role');
-            }
-
-            setUser({
-              id: session.user.id,
-              email: session.user.email!,
-              role: role,
-              businessName: profile.name,
-              whatsappNumber: profile.whatsapp_number
-            });
-          }
+        if (profile) {
+          // Ensure role is either 'admin' or 'seller'
+          const role = profile.role === 'admin' ? 'admin' : 'seller';
+          
+          setUser({
+            id: session.user.id,
+            email: session.user.email!,
+            role: role,
+            businessName: profile.name,
+            whatsappNumber: profile.whatsapp_number
+          });
         }
-      } catch (error) {
-        console.error('Session check error:', error);
+      } else {
         setUser(null);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error('Error refreshing user:', error);
+      setUser(null);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to refresh user session. Please try logging in again."
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    checkSession();
+  useEffect(() => {
+    refreshUser();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
       
-      try {
-        if (event === 'SIGNED_IN' && session?.user) {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-
-          if (profileError) throw profileError;
-
-          if (profile) {
-            // Ensure role is of type UserRole
-            const role = profile.role as UserRole;
-            if (role !== 'admin' && role !== 'seller') {
-              throw new Error('Invalid user role');
-            }
-
-            setUser({
-              id: session.user.id,
-              email: session.user.email!,
-              role: role,
-              businessName: profile.name,
-              whatsappNumber: profile.whatsapp_number
-            });
-          }
-          
-          navigate('/');
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          navigate('/auth/login');
-        }
-      } catch (error) {
-        console.error('Auth state change error:', error);
+      if (event === 'SIGNED_IN') {
+        await refreshUser();
+        navigate('/');
+      } else if (event === 'SIGNED_OUT') {
         setUser(null);
-        toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: "There was a problem with your authentication. Please try logging in again."
-        });
+        navigate('/auth/login');
+      } else if (event === 'TOKEN_REFRESHED') {
+        await refreshUser();
       }
     });
 
@@ -124,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       navigate('/auth/login');
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error('Error signing out:', error);
       toast({
         variant: "destructive",
         title: "Error signing out",
@@ -134,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
