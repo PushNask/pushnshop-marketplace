@@ -20,40 +20,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (session?.user) {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profileError) throw profileError;
-
-        if (profile) {
-          // Ensure role is either 'admin' or 'seller'
-          const role = profile.role === 'admin' ? 'admin' : 'seller';
-          
-          setUser({
-            id: session.user.id,
-            email: session.user.email!,
-            role: role,
-            businessName: profile.name,
-            whatsappNumber: profile.whatsapp_number
-          });
-        }
-      } else {
+      if (sessionError) {
+        throw sessionError;
+      }
+      
+      if (!session) {
         setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        setUser(null);
+      } else if (profile) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email!,
+          role: profile.role,
+          businessName: profile.name,
+          whatsappNumber: profile.whatsapp_number
+        });
       }
     } catch (error) {
       console.error('Error refreshing user:', error);
       setUser(null);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to refresh user session. Please try logging in again."
-      });
     } finally {
       setLoading(false);
     }
@@ -63,16 +62,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
+      console.log('Auth state changed:', event);
       
       if (event === 'SIGNED_IN') {
         await refreshUser();
-        navigate('/');
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
+        setLoading(false);
         navigate('/auth/login');
-      } else if (event === 'TOKEN_REFRESHED') {
-        await refreshUser();
       }
     });
 
@@ -83,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      setLoading(true);
       await supabase.auth.signOut();
       setUser(null);
       navigate('/auth/login');
@@ -93,6 +91,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Error signing out",
         description: "There was a problem signing you out."
       });
+    } finally {
+      setLoading(false);
     }
   };
 
