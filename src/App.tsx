@@ -26,8 +26,8 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <LoadingProvider>
+        <LoadingProvider>
+          <AuthProvider>
             <LanguageProvider>
               <TooltipProvider>
                 <Suspense fallback={
@@ -41,8 +41,8 @@ const App = () => (
                 <Sonner />
               </TooltipProvider>
             </LanguageProvider>
-          </LoadingProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </LoadingProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </ErrorBoundary>
