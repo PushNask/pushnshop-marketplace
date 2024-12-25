@@ -6,17 +6,42 @@ import { cleanup } from '@testing-library/react';
 const localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
-  clear: vi.fn()
-};
+  clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
+  removeItem: vi.fn()
+} as Storage;
+
 global.localStorage = localStorageMock;
 
 // Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  observe() { return null; }
-  unobserve() { return null; }
-  disconnect() { return null; }
-};
+class MockIntersectionObserver implements IntersectionObserver {
+  readonly root: Element | null = null;
+  readonly rootMargin: string = '';
+  readonly thresholds: ReadonlyArray<number> = [];
+
+  constructor() {
+    // Constructor implementation
+  }
+
+  observe(): void {
+    // Observe implementation
+  }
+
+  unobserve(): void {
+    // Unobserve implementation
+  }
+
+  disconnect(): void {
+    // Disconnect implementation
+  }
+
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+}
+
+global.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
 // Cleanup after each test
 afterEach(() => {

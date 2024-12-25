@@ -7,6 +7,7 @@ import { User } from "@/components/auth/types";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -17,6 +18,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  const signIn = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
+    await refreshUser();
+  };
 
   const refreshUser = async () => {
     try {
@@ -93,7 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
