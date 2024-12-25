@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { User } from "@/components/auth/types";
-import { useLoading } from "@/components/providers/LoadingProvider";
 
 interface AuthContextType {
   user: User | null;
@@ -18,11 +17,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { setIsLoading } = useLoading();
 
   const refreshUser = async () => {
     try {
-      setIsLoading(true);
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
@@ -57,7 +54,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
     } finally {
       setLoading(false);
-      setIsLoading(false);
     }
   };
 
@@ -83,7 +79,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      setIsLoading(true);
       await supabase.auth.signOut();
       setUser(null);
       navigate('/auth/login');
@@ -94,8 +89,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Error signing out",
         description: "There was a problem signing you out."
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
