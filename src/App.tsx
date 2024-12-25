@@ -17,7 +17,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <BrowserRouter basename="/">
+  <BrowserRouter>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <LanguageProvider>
