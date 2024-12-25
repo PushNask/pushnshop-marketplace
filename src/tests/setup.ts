@@ -2,6 +2,13 @@ import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
+// Extend expect matchers
+declare global {
+  namespace Vi {
+    interface JestAssertion<T = any> extends jest.Matchers<void, T> {}
+  }
+}
+
 // Mock localStorage
 const localStorageMock = {
   getItem: vi.fn(),
