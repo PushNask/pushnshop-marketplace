@@ -43,12 +43,6 @@ class MockIntersectionObserver implements IntersectionObserver {
 
 global.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
-// Cleanup after each test
-afterEach(() => {
-  cleanup();
-  vi.clearAllMocks();
-});
-
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -62,4 +56,10 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
+});
+
+// Cleanup after each test
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
 });
