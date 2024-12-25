@@ -44,18 +44,33 @@ export default function NewListing() {
       if (!user) throw new Error('Not authenticated');
 
       try {
+        console.log('Starting product creation with data:', data);
+        
         // Upload images first
         const imageUrls = await Promise.all(
           data.images.map(async (img) => {
             const fileName = `${crypto.randomUUID()}.${img.name.split('.').pop()}`;
+            console.log('Uploading image:', fileName);
+            
             const { data: uploadData, error: uploadError } = await supabase.storage
               .from('product-images')
               .upload(fileName, img);
 
-            if (uploadError) throw uploadError;
-            return uploadData.path;
+            if (uploadError) {
+              console.error('Image upload error:', uploadError);
+              throw uploadError;
+            }
+            
+            // Get the public URL
+            const { data: { publicUrl } } = supabase.storage
+              .from('product-images')
+              .getPublicUrl(uploadData.path);
+              
+            return publicUrl;
           })
         );
+
+        console.log('Images uploaded successfully:', imageUrls);
 
         // Create product
         const { data: product, error } = await supabase
@@ -73,10 +88,15 @@ export default function NewListing() {
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Product creation error:', error);
+          throw error;
+        }
+
+        console.log('Product created successfully:', product);
         return product;
       } catch (error) {
-        console.error('Error creating product:', error);
+        console.error('Error in product creation:', error);
         throw error;
       }
     },
@@ -90,6 +110,7 @@ export default function NewListing() {
       navigate('/seller/dashboard');
     },
     onError: (error: Error) => {
+      console.error('Mutation error:', error);
       toast({
         title: language === 'en' ? 'Error' : 'Erreur',
         description: error.message,
@@ -99,6 +120,7 @@ export default function NewListing() {
   });
 
   const onSubmit = async (data: ProductFormValues) => {
+    console.log('Form submitted with data:', data);
     try {
       await createProduct.mutateAsync(data);
     } catch (error) {

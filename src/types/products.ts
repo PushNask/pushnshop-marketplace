@@ -15,11 +15,9 @@ export const productSchema = z.object({
     .int()
     .min(24)
     .max(120),
-  images: z.array(z.any())
+  images: z.array(z.instanceof(File))
     .min(1, 'At least one image is required')
     .max(7, 'Maximum 7 images allowed'),
-  whatsapp_number: z.string()
-    .regex(/^\+?\d{9,15}$/, 'Invalid WhatsApp number'),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
