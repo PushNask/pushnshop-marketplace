@@ -11,6 +11,8 @@ export default function Signup() {
       title: "Account created!",
       description: "Please check your email to verify your account.",
     });
+    // Navigate to login page after successful signup
+    navigate('/auth/login');
   };
 
   const handleError = (error: Error) => {

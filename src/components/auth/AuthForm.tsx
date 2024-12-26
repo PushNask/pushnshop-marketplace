@@ -73,7 +73,6 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
         });
 
         onSuccess?.();
-        navigate('/');
       } else {
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: data.email,
@@ -103,7 +102,6 @@ export function AuthForm({ defaultView = 'login', onSuccess, onError }: AuthForm
         });
         
         onSuccess?.();
-        navigate('/auth/verify');
       }
     } catch (error: any) {
       console.error('Auth error:', error);
