@@ -1,9 +1,13 @@
-/// <reference types="@testing-library/jest-dom" />
-
 import '@testing-library/jest-dom';
 
 declare global {
-  namespace Vi {
-    interface JestAssertion<T = any> extends jest.Matchers<void, T> {}
+  namespace jest {
+    interface Matchers<R = void> {
+      toBeInTheDocument(): R;
+      toHaveClass(className: string): R;
+      toHaveAttribute(attr: string, value?: string): R;
+    }
   }
 }
+
+export {};
