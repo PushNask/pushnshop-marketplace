@@ -19,7 +19,7 @@ export default tseslint.config(
         it: true,
         expect: true,
         beforeEach: true,
-        afterEach: true
+        afterEach: true,
       },
     },
     plugins: {

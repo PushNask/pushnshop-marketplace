@@ -9,7 +9,7 @@ const localStorageMock = {
   clear: vi.fn(),
   removeItem: vi.fn(),
   length: 0,
-  key: vi.fn()
+  key: vi.fn(),
 } as Storage;
 
 global.localStorage = localStorageMock;
@@ -20,15 +20,15 @@ class MockIntersectionObserver implements IntersectionObserver {
   readonly rootMargin: string = '';
   readonly thresholds: ReadonlyArray<number> = [];
 
-  constructor() {
+  constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
     // Constructor implementation
   }
 
-  observe(): void {
+  observe(target: Element): void {
     // Observe implementation
   }
 
-  unobserve(): void {
+  unobserve(target: Element): void {
     // Unobserve implementation
   }
 
